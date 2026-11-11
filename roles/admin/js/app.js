@@ -141,11 +141,39 @@ function navItem(key, label, icon) {
 }
 
 function shell(content) {
+  const template = document.getElementById("app-shell-template");
+  if (template) {
+    const layout = template.content.firstElementChild.cloneNode(true);
+    layout.classList.add(`role-${state.session}`);
+    layout.querySelectorAll("[data-navigation-item]").forEach((item) => {
+      const key = item.dataset.page;
+      if (!rolePages().includes(key) || !allowed(key)) item.remove();
+      else if (state.page === key || state.page.startsWith(`${key}:`)) item.classList.add("active");
+    });
+    layout.querySelector("[data-role-label]").textContent = currentUser().label;
+    layout.querySelector("[data-current-page]").textContent = state.page.split(":")[0];
+    layout.querySelector("[data-user-initials]").textContent = currentUser().initials;
+    if (state.notifications.some((item) => !item.read)) {
+      const dot = document.createElement("i");
+      dot.className = "dot";
+      layout.querySelector('[data-page="notifications"]').append(dot);
+    }
+    layout.querySelector("[data-page-content]").innerHTML = content;
+    return layout.outerHTML;
+  }
   const unread = state.notifications.filter((item) => !item.read).length;
   return `<div class="app-shell role-${state.session}"><aside class="sidebar"><div class="brand"><div class="brand-mark">N</div><div><strong>NIMS</strong><small>Network operations</small></div></div><nav><div class="nav-label">Workspace</div>${nav.slice(0, 6).map(([key, label, icon]) => navItem(key, label, icon)).join("")}<div class="nav-label">Management</div>${nav.slice(6).map(([key, label, icon]) => navItem(key, label, icon)).join("")}</nav><div class="sidebar-footer"><div class="role-chip">${currentUser().label}</div><button class="nav-item" data-action="logout"><span class="nav-icon">↪</span><span>Sign out</span></button></div></aside><main class="main"><header class="topbar"><span class="crumb">Workspace / <strong>${esc(state.page.split(":")[0])}</strong></span><div class="top-actions"><button class="icon-btn" data-page="notifications" aria-label="Notifications">◌${unread ? `<i class="dot"></i>` : ""}</button><div class="avatar">${currentUser().initials}</div></div></header><section class="content">${content}</section></main></div>`;
 }
 
 function pageHead(title, subtitle, action = "") {
+  const template = document.getElementById("page-head-template");
+  if (template) {
+    const heading = template.content.firstElementChild.cloneNode(true);
+    heading.querySelector("[data-page-title]").textContent = title;
+    heading.querySelector("[data-page-subtitle]").textContent = subtitle;
+    heading.querySelector("[data-page-actions]").innerHTML = action;
+    return heading.outerHTML;
+  }
   return `<div class="page-head"><div><h1>${title}</h1><p class="subhead">${subtitle}</p></div>${action}</div>`;
 }
 
@@ -159,6 +187,33 @@ function dashboard() {
   const stats = config.stats.map(([label, value, trend]) => stat(label, value(state), trend)).join("");
   const panelTitle = state.session === "lead" ? "Escalation workload" : state.session === "engineer" ? "Assigned field work" : state.session === "customer" ? "My recent tickets" : "Incident activity";
   const panelItems = state.session === "lead" ? state.incidents.filter((item) => item.escalated) : state.session === "engineer" ? state.fieldTasks : visible;
+  const template = document.getElementById("dashboard-template");
+  if (template) {
+    const view = template.content.firstElementChild.cloneNode(true);
+    const dashboardActionLabel = state.session === "admin" ? "View infrastructure" : state.session === "lead" ? "Review escalations" : "Open incident queue";
+    view.querySelector("[data-dashboard-heading]").innerHTML = pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`);
+    view.querySelector("[data-dashboard-stats]").innerHTML = stats;
+    view.querySelector("[data-activity-title]").textContent = panelTitle;
+    view.querySelector("[data-activity-content]").innerHTML = state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7));
+    const activityAction = view.querySelector("[data-activity-action]");
+    if (hasIncidentWorkspace) activityAction.innerHTML = `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>`;
+    const queueLink = view.querySelector("[data-incident-queue-link]");
+    if (!hasIncidentWorkspace) queueLink.remove();
+    else queueLink.dataset.page = "incidents";
+    const priorityCounts = {
+      P1: visible.filter((incident) => incident.priority === "P1").length,
+      P2: visible.filter((incident) => incident.priority === "P2").length,
+      P3: visible.filter((incident) => incident.priority === "P3").length,
+      P4: visible.filter((incident) => incident.priority === "P4").length
+    };
+    const priorityWidths = { P1: 100, P2: 75, P3: 50, P4: 30 };
+    Object.entries(priorityCounts).forEach(([priority, count]) => {
+      view.querySelector(`[data-priority-value="${priority}"]`).textContent = count;
+      view.querySelector(`[data-priority-bar="${priority}"]`).style.width = `${Math.max(priorityWidths[priority], count ? 13 : 3)}%`;
+    });
+    view.querySelectorAll("[data-chart-height]").forEach((bar) => { bar.style.height = `${bar.dataset.chartHeight}%`; });
+    return view.outerHTML;
+  }
   return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`)}<div class="stats">${stats}</div><div class="grid-2"><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>` : ""}</div>${state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7))}</div><div class="panel"><div class="panel-head"><h2>Priority distribution</h2></div><div class="metric-list">${metric("P1 · Critical", visible.filter((i) => i.priority === "P1").length, 100, "red")}${metric("P2 · High", visible.filter((i) => i.priority === "P2").length, 75)}${metric("P3 · Medium", visible.filter((i) => i.priority === "P3").length, 50, "amber")}${metric("P4 · Low", visible.filter((i) => i.priority === "P4").length, 30, "green")}</div></div></div><div class="panel"><div class="panel-head"><h2>Incident activity</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="incidents">Open queue →</button>` : ""}</div><div class="chart">${[42, 67, 55, 88, 63, 76, 96].map((height, index) => `<div class="bar-col"><i style="height:${height}%"></i>${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}</div>`).join("")}</div></div>`;
 }
 

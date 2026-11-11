@@ -7,7 +7,6 @@ import { roleDashboards, roleNavigation } from "./roles/index.js";
 const nav = [
   ["dashboard", "Overview", "⌂"],
   ["incidents", "Incidents", "◈"],
-  ["create", "Raise incident", "＋"],
   ["infrastructure", "Infrastructure", "⌁"],
   ["escalations", "Escalations", "↗"],
   ["field", "Field service", "⚒"],
@@ -105,6 +104,60 @@ let state = loadState(createSeed);
 state.towers = state.towers.map((tower) => { const clean = { ...tower, status: tower.status === "Active" ? "Active" : "Deactivated" }; delete clean.coordinates; return clean; });
 state.routers = state.routers.map((router) => { const clean = { ...router, status: router.status === "Active" ? "Active" : "Deactivated" }; delete clean.ip; delete clean.mac; return clean; });
 state.customers = state.customers.map((customer) => ({ ...customer, status: customer.status === "Inactive" ? "Inactive" : "Active" }));
+if (!state.customerDemoDataSeeded) {
+  const demoCustomerRouters = [...new Set(state.customers.slice(0, 3).map((customer) => customer.routerId))];
+  const demoTitles = ["Intermittent connection", "Network service interruption", "Slow connection reported"];
+  const demoStatuses = ["Investigating", "Open", "Resolved"];
+  for (const [routerIndex, routerId] of demoCustomerRouters.entries()) {
+    const router = state.routers.find((item) => item.id === routerId);
+    if (!router) continue;
+    for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+      for (let ticketIndex = 0; ticketIndex < 2; ticketIndex += 1) {
+        const created = new Date();
+        created.setDate(created.getDate() - dayOffset);
+        created.setHours(9 + ticketIndex * 4, routerIndex * 5, 0, 0);
+        const createdAt = created.toISOString();
+        const status = demoStatuses[(dayOffset + ticketIndex) % demoStatuses.length];
+        const affected = state.customers.filter((customer) => customer.routerId === routerId).length;
+        const policy = selectPolicy(state.policies, affected);
+        const incidentId = `INC-DEMO-${routerIndex + 1}${String(dayOffset + 1).padStart(2, "0")}${ticketIndex + 1}`;
+        if (state.incidents.some((incident) => incident.id === incidentId)) continue;
+        state.incidents.push({
+          id: incidentId,
+          title: demoTitles[(dayOffset + ticketIndex + routerIndex) % demoTitles.length],
+          description: "Demo ticket for customer incident history. Our support team is reviewing the reported service issue.",
+          category: ["Connectivity", "Performance", "Others"][(dayOffset + ticketIndex) % 3],
+          routerId,
+          towerId: router.towerId,
+          status,
+          priority: policy.id,
+          affected,
+          assignee: ["Priya Nair", "Dev Patel", "Sana Khan"][(dayOffset + ticketIndex) % 3],
+          createdAt,
+          responseDeadline: new Date(created.getTime() + policy.response * 3600000).toISOString(),
+          resolutionDeadline: new Date(created.getTime() + policy.resolution * 3600000).toISOString(),
+          escalated: status === "Investigating",
+          fieldRequired: false,
+          notes: [{ text: "Our team is reviewing this report and will post updates here.", author: "Support team", at: createdAt }],
+          timeline: [{ title: "Incident created", actor: "System", at: createdAt }]
+        });
+      }
+    }
+  }
+  const updateRouters = demoCustomerRouters.slice(0, 2);
+  state.customerServiceUpdates = (state.customerServiceUpdates || []).filter((update) => !update.demo);
+  state.customerServiceUpdates.push(...updateRouters.map((routerId, index) => ({
+    id: `STATUS-DEMO-${index + 1}`,
+    routerId,
+    title: index === 0 ? "Service interruption update" : "Network performance update",
+    status: "Investigating",
+    message: "We are aware of the service issue and our network team is actively working on it. Once the issue is resolved, you will receive a notification.",
+    updatedAt: now(),
+    demo: true
+  })));
+  state.customerDemoDataSeeded = true;
+  saveState(state);
+}
 if (window.NIMS_ROLE_PAGE) {
   state.session = window.NIMS_ROLE_PAGE;
   state.authUser = JSON.parse(localStorage.getItem("nims-auth-session") || "null");
@@ -134,6 +187,56 @@ const metric = (label, value, width, tone = "blue") => `<div class="metric-row">
 const fieldTaskTable = (tasks) => tasks.length
   ? `<div class="table-wrap"><table><thead><tr><th>Request</th><th>Incident</th><th>Status</th></tr></thead><tbody>${tasks.slice(0, 7).map((task) => `<tr><td class="primary-text">${task.id}</td><td>${task.incidentId}</td><td>${badge(task.status)}</td></tr>`).join("")}</tbody></table></div>`
   : `<div class="empty">No field tasks assigned.</div>`;
+const localDateInput = (date) => {
+  const value = new Date(date);
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+};
+const addDays = (date, offset) => {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  copy.setDate(copy.getDate() + offset);
+  return localDateInput(copy);
+};
+const customerIncidentFilter = () => {
+  if (!state.customerIncidentFilter || !["all", "today", "yesterday", "custom"].includes(state.customerIncidentFilter.type)) {
+    state.customerIncidentFilter = { type: "today", date: localDateInput(new Date()) };
+  }
+  return state.customerIncidentFilter;
+};
+const incidentMatchesCustomerFilter = (incident, filter = customerIncidentFilter()) => {
+  const createdDate = localDateInput(new Date(incident.createdAt));
+  const today = localDateInput(new Date());
+  const yesterday = addDays(today, -1);
+  if (filter.type === "all") return true;
+  if (filter.type === "today") return createdDate === today;
+  if (filter.type === "yesterday") return createdDate === yesterday;
+  if (filter.type === "custom") return createdDate === filter.date;
+  return true;
+};
+const incidentSummary = (items) => {
+  const resolved = items.filter((incident) => incident.status === "Resolved").length;
+  const pending = items.filter((incident) => incident.status !== "Resolved").length;
+  const selected = state.customerIncidentQuickStatus;
+  return `<div class="incident-summary"><button type="button" class="incident-summary-card success ${selected === "resolved" ? "selected" : ""}" data-incident-status="resolved" aria-pressed="${selected === "resolved"}"><span>Resolved</span><strong>${resolved}</strong><small>View resolved tickets</small></button><button type="button" class="incident-summary-card warning ${selected === "pending" ? "selected" : ""}" data-incident-status="pending" aria-pressed="${selected === "pending"}"><span>Pending</span><strong>${pending}</strong><small>View pending tickets</small></button></div>`;
+};
+const refreshIncidentResults = () => {
+  const resultsNode = document.getElementById("incident-results");
+  if (!resultsNode) return;
+  const query = document.getElementById("incident-search")?.value.toLowerCase() || "";
+  const status = document.getElementById("status-filter")?.value || "";
+  const priority = document.getElementById("priority-filter")?.value || "";
+  const category = document.getElementById("category-filter")?.value || "";
+  const dateFilter = customerIncidentFilter();
+  const baseFiltered = visibleIncidents().filter((incident) => incidentMatchesCustomerFilter(incident, dateFilter) && `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query) && (!priority || incident.priority === priority) && (!category || incident.category === category));
+  const filtered = baseFiltered.filter((incident) => {
+    if (state.customerIncidentQuickStatus === "pending") return incident.status !== "Resolved";
+    if (state.customerIncidentQuickStatus === "resolved") return incident.status === "Resolved";
+    return !status || incident.status === status;
+  });
+  resultsNode.innerHTML = incidentTable(filtered);
+  const summaryNode = document.getElementById("incident-summary");
+  if (summaryNode) summaryNode.innerHTML = incidentSummary(baseFiltered);
+};
 
 function navItem(key, label, icon) {
   if (!rolePages().includes(key) || !allowed(key)) return "";
@@ -142,7 +245,7 @@ function navItem(key, label, icon) {
 
 function shell(content) {
   const unread = state.notifications.filter((item) => !item.read).length;
-  return `<div class="app-shell role-${state.session}"><aside class="sidebar"><div class="brand"><div class="brand-mark">N</div><div><strong>NIMS</strong><small>Network operations</small></div></div><nav><div class="nav-label">Workspace</div>${nav.slice(0, 6).map(([key, label, icon]) => navItem(key, label, icon)).join("")}<div class="nav-label">Management</div>${nav.slice(6).map(([key, label, icon]) => navItem(key, label, icon)).join("")}</nav><div class="sidebar-footer"><div class="role-chip">${currentUser().label}</div><button class="nav-item" data-action="logout"><span class="nav-icon">↪</span><span>Sign out</span></button></div></aside><main class="main"><header class="topbar"><span class="crumb">Workspace / <strong>${esc(state.page.split(":")[0])}</strong></span><div class="top-actions"><button class="icon-btn" data-page="notifications" aria-label="Notifications">◌${unread ? `<i class="dot"></i>` : ""}</button><div class="avatar">${currentUser().initials}</div></div></header><section class="content">${content}</section></main></div>`;
+  return `<div class="app-shell role-${state.session}"><aside class="sidebar"><div class="brand"><div class="brand-mark">I</div><div><strong>ImpactFlow</strong><small>Network operations</small></div></div><nav><div class="nav-label">Workspace</div>${nav.slice(0, 6).map(([key, label, icon]) => navItem(key, label, icon)).join("")}<div class="nav-label">Management</div>${nav.slice(6).map(([key, label, icon]) => navItem(key, label, icon)).join("")}</nav><div class="sidebar-footer"><div class="role-chip">${currentUser().label}</div><button class="nav-item" data-action="logout"><span class="nav-icon">↪</span><span>Sign out</span></button></div></aside><main class="main"><header class="topbar"><span class="crumb">Workspace / <strong>${esc(state.page.split(":")[0])}</strong></span><div class="top-actions"><button class="icon-btn" data-page="notifications" aria-label="Notifications">◌${unread ? `<i class="dot"></i>` : ""}</button><div class="avatar">${currentUser().initials}</div></div></header><section class="content">${content}</section></main></div>`;
 }
 
 function pageHead(title, subtitle, action = "") {
@@ -155,11 +258,21 @@ function dashboard() {
   const action = config.primaryAction === "create" ? "create" : config.primaryAction;
   const hasIncidentWorkspace = rolePages().includes("incidents");
   const dashboardAction = state.session === "admin" ? "infrastructure" : action;
-  const dashboardActionLabel = state.session === "admin" ? "View infrastructure" : state.session === "engineer" ? "View field work" : state.session === "lead" ? "Review escalations" : state.session === "customer" ? "Raise incident" : "Open incident queue";
+  const dashboardActionLabel = state.session === "admin" ? "View infrastructure" : state.session === "engineer" ? "View field work" : state.session === "lead" ? "Review escalations" : "Open incident queue";
+  const dashboardActionButton = `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`;
   const stats = config.stats.map(([label, value, trend]) => stat(label, value(state), trend)).join("");
   const panelTitle = state.session === "lead" ? "Escalation workload" : state.session === "engineer" ? "Assigned field work" : state.session === "customer" ? "My recent tickets" : "Incident activity";
   const panelItems = state.session === "lead" ? state.incidents.filter((item) => item.escalated) : state.session === "engineer" ? state.fieldTasks : visible;
-  return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`)}<div class="stats">${stats}</div><div class="grid-2"><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>` : ""}</div>${state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7))}</div><div class="panel"><div class="panel-head"><h2>Priority distribution</h2></div><div class="metric-list">${metric("P1 · Critical", visible.filter((i) => i.priority === "P1").length, 100, "red")}${metric("P2 · High", visible.filter((i) => i.priority === "P2").length, 75)}${metric("P3 · Medium", visible.filter((i) => i.priority === "P3").length, 50, "amber")}${metric("P4 · Low", visible.filter((i) => i.priority === "P4").length, 30, "green")}</div></div></div><div class="panel"><div class="panel-head"><h2>Incident activity</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="incidents">Open queue →</button>` : ""}</div><div class="chart">${[42, 67, 55, 88, 63, 76, 96].map((height, index) => `<div class="bar-col"><i style="height:${height}%"></i>${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}</div>`).join("")}</div></div>`;
+  if (state.session === "customer") {
+    const account = state.customers.find((customer) => customer.name === currentUser().name);
+    const updates = (state.customerServiceUpdates || []).filter((update) => update.routerId === account?.routerId).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 1);
+    const updateContent = updates.length
+      ? updates.map((update) => `<article class="service-update"><div class="service-update-heading"><strong>${esc(update.title)}</strong>${badge(update.status)}</div><p>${esc(update.message)}</p><small>Updated ${date(update.updatedAt)}</small></article>`).join("")
+      : `<div class="service-update service-update-clear"><strong>No active service advisories</strong><p>There are no reported service interruptions for your connection right now.</p></div>`;
+    const recentIncidents = [...visible].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 7);
+    return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`)}<div class="stats">${stats}</div><section class="service-updates"><div class="service-updates-title"><div><h2>Service status updates</h2><p class="muted">Important updates for your network connection</p></div><button class="panel-link" data-page="notifications">All updates →</button></div>${updateContent}</section><div class="panel"><div class="panel-head"><h2>My recent tickets</h2><button class="panel-link" data-page="incidents">View all →</button></div>${incidentTable(recentIncidents)}</div>`;
+  }
+  return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, dashboardActionButton)}<div class="stats">${stats}</div><div class="grid-2"><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>` : ""}</div>${state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7))}</div><div class="panel"><div class="panel-head"><h2>Priority distribution</h2></div><div class="metric-list">${metric("P1 · Critical", visible.filter((i) => i.priority === "P1").length, 100, "red")}${metric("P2 · High", visible.filter((i) => i.priority === "P2").length, 75)}${metric("P3 · Medium", visible.filter((i) => i.priority === "P3").length, 50, "amber")}${metric("P4 · Low", visible.filter((i) => i.priority === "P4").length, 30, "green")}</div></div></div><div class="panel"><div class="panel-head"><h2>Incident activity</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="incidents">Open queue →</button>` : ""}</div><div class="chart">${[42, 67, 55, 88, 63, 76, 96].map((height, index) => `<div class="bar-col"><i style="height:${height}%"></i>${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}</div>`).join("")}</div></div>`;
 }
 
 function incidentTable(items) {
@@ -169,13 +282,17 @@ function incidentTable(items) {
 }
 
 function incidentsView() {
-  const controls = `<div class="filters"><input class="search" id="incident-search" placeholder="Search ID, title or assignee"><select class="field" id="status-filter"><option value="">All statuses</option>${["Open", "Investigating", "Escalated", "Pending validation", "Resolved"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="priority-filter"><option value="">All priorities</option>${["P1", "P2", "P3", "P4"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="category-filter"><option value="">All categories</option><option>Connectivity</option><option>Performance</option><option>Hardware</option></select></div>`;
-  const action = state.session === "customer" ? `<button class="btn btn-primary" data-page="create">＋ Raise incident</button>` : "";
-  return `${pageHead(state.session === "customer" ? "My incidents" : "Incident management", state.session === "customer" ? "Track your own network support tickets and resolutions." : "Search, filter and action the network incident queue.", action)}<div class="panel">${controls}<div id="incident-results">${incidentTable(visibleIncidents())}</div></div>`;
-}
-
-function createIncidentView() {
-  return `${pageHead("Raise a new incident", "The affected customer count and SLA are calculated automatically.")}<div class="grid-2"><div class="panel"><form id="incident-form"><div class="form-grid"><div class="form-group full"><label>Incident title *</label><input required name="title" class="field" placeholder="e.g. Intermittent connectivity at site"></div><div class="form-group"><label>Category *</label><select name="category" class="field"><option>Connectivity</option><option>Performance</option><option>Hardware</option><option>Planned maintenance</option></select></div><div class="form-group"><label>Impact scope *</label><select name="scope" id="incident-scope" class="field"><option value="router">Router</option><option value="tower">Tower</option><option value="location">Location / other</option></select></div><div class="form-group"><label>Tower</label><select name="towerId" id="incident-tower" class="field">${state.towers.map((tower) => `<option value="${tower.id}">${esc(tower.name)} · ${tower.location}</option>`).join("")}</select></div><div class="form-group"><label>Router</label><select name="routerId" id="incident-router" class="field">${state.routers.map((router) => `<option value="${router.id}">${router.id} · ${router.model}</option>`).join("")}</select></div><div class="form-group full"><label>Description *</label><textarea required name="description" class="field" placeholder="Describe the service problem, symptoms and affected location"></textarea></div><div class="form-group full"><label>Supporting attachment</label><input type="file" name="attachment" class="field"></div></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-page="incidents">Cancel</button><button class="btn btn-primary">Create incident & calculate SLA</button></div></form></div><div class="panel"><div class="panel-head"><h2>Live SLA preview</h2></div><div id="sla-preview" class="sla-preview"></div></div></div>`;
+  const dateFilter = customerIncidentFilter();
+  const calendarValue = dateFilter.type === "custom" ? dateFilter.date : localDateInput(new Date());
+  const controls = `<div class="filters"><input class="search" id="incident-search" placeholder="Search ID, title or assignee"><select class="field" id="status-filter"><option value="">All statuses</option>${["Open", "Investigating", "Escalated", "Pending validation", "Resolved"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="priority-filter"><option value="">All priorities</option>${["P1", "P2", "P3", "P4"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="category-filter"><option value="">All categories</option><option>Connectivity</option><option>Performance</option><option>Hardware</option><option>Planned maintenance</option><option>Others</option></select><select class="field" id="incident-date-filter" aria-label="Filter by date"><option value="all" ${dateFilter.type === "all" ? "selected" : ""}>All dates</option><option value="today" ${dateFilter.type === "today" ? "selected" : ""}>Today</option><option value="yesterday" ${dateFilter.type === "yesterday" ? "selected" : ""}>Yesterday</option><option value="custom" ${dateFilter.type === "custom" ? "selected" : ""}>Select from calendar</option></select><input id="incident-date-picker" type="date" class="field date-picker ${dateFilter.type === "custom" ? "" : "hidden"}" value="${calendarValue}" aria-label="Select incident date"></div>`;
+  const dateIncidents = visibleIncidents().filter((incident) => incidentMatchesCustomerFilter(incident, dateFilter));
+  const filteredByDate = dateIncidents.filter((incident) => {
+    if (state.customerIncidentQuickStatus === "pending") return incident.status !== "Resolved";
+    if (state.customerIncidentQuickStatus === "resolved") return incident.status === "Resolved";
+    return true;
+  });
+  const action = state.session === "customer" ? `<button class="btn btn-primary" data-action="new-incident">＋ Create new incident</button>` : "";
+  return `${pageHead(state.session === "customer" ? "My incidents" : "Incident management", state.session === "customer" ? "Track your own network support tickets and resolutions." : "Search, filter and action the network incident queue.", action)}<div class="panel">${controls}<div id="incident-summary">${incidentSummary(dateIncidents)}</div><div id="incident-results">${incidentTable(filteredByDate)}</div></div>`;
 }
 
 function infrastructureView() {
@@ -228,7 +345,10 @@ function reportsView() {
 }
 
 function notificationsView() {
-  return `${pageHead("Notifications", "Alerts, workflow changes and service updates.")}<div class="panel">${state.notifications.length ? state.notifications.map((item) => `<div class="notification ${item.read ? "read" : ""}" data-notification="${item.id}"><div class="notification-icon">◌</div><div><strong>${esc(item.title)}</strong><p>${esc(item.detail)}</p><small>${date(item.at)}</small></div>${item.read ? "" : `<span class="unread-dot"></span>`}</div>`).join("") : `<div class="empty">You are all caught up.</div>`}</div>`;
+  const account = state.session === "customer" ? state.customers.find((customer) => customer.name === currentUser().name) : null;
+  const serviceUpdates = (state.customerServiceUpdates || []).filter((update) => update.routerId === account?.routerId).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 1);
+  const servicePanel = serviceUpdates.length ? `<div class="panel"><div class="panel-head"><h2>Service status updates</h2></div>${serviceUpdates.map((update) => `<article class="service-update"><div class="service-update-heading"><strong>${esc(update.title)}</strong>${badge(update.status)}</div><p>${esc(update.message)}</p><small>Updated ${date(update.updatedAt)}</small></article>`).join("")}</div>` : "";
+  return `${pageHead("Notifications", "Alerts, workflow changes and service updates.")}${servicePanel}<div class="panel"><div class="panel-head"><h2>Notifications</h2></div>${state.notifications.length ? state.notifications.map((item) => `<div class="notification ${item.read ? "read" : ""}" data-notification="${item.id}"><div class="notification-icon">◌</div><div><strong>${esc(item.title)}</strong><p>${esc(item.detail)}</p><small>${date(item.at)}</small></div>${item.read ? "" : `<span class="unread-dot"></span>`}</div>`).join("") : `<div class="empty">You are all caught up.</div>`}</div>`;
 }
 
 function auditView() {
@@ -261,7 +381,9 @@ function routerForm(existing = {}) {
   return formModal(existing.id ? "Edit router" : "Create router", `<form id="router-form" data-id="${existing.id || ""}"><div class="form-grid"><div class="form-group"><label>Router ID *</label><input required name="id" class="field" value="${esc(existing.id || "")}"></div><div class="form-group"><label>Model *</label><input required name="model" class="field" value="${esc(existing.model || "Cisco ASR 920")}"></div><div class="form-group"><label>Associated tower *</label><select name="towerId" class="field">${state.towers.map((tower) => `<option value="${tower.id}" ${tower.id === existing.towerId ? "selected" : ""}>${esc(tower.name)}</option>`).join("")}</select></div><div class="form-group"><label>Status</label><select name="status" class="field"><option ${existing.status !== "Deactivated" ? "selected" : ""}>Active</option><option ${existing.status === "Deactivated" ? "selected" : ""}>Deactivated</option></select></div></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Save router</button></div></form>`);
 }
 function incidentModal() {
-  return formModal("Create network incident", `<form id="incident-form"><div class="form-grid"><div class="form-group full"><label>Incident title *</label><input required name="title" class="field" placeholder="Describe the issue"></div><div class="form-group"><label>Category</label><select name="category" class="field"><option>Connectivity</option><option>Performance</option><option>Hardware</option></select></div><div class="form-group"><label>Impact scope</label><select name="scope" id="incident-scope" class="field"><option value="router">Router</option><option value="tower">Tower</option></select></div><div class="form-group"><label>Tower</label><select name="towerId" id="incident-tower" class="field">${state.towers.map((tower) => `<option value="${tower.id}">${esc(tower.name)}</option>`).join("")}</select></div><div class="form-group"><label>Router</label><select name="routerId" id="incident-router" class="field">${state.routers.map((router) => `<option value="${router.id}">${router.id} · ${router.ip}</option>`).join("")}</select></div><div class="form-group full"><label>Description *</label><textarea required name="description" class="field" placeholder="Describe the problem"></textarea></div><div class="form-group full"><label>Supporting attachment</label><input type="file" class="field"></div></div><div id="modal-sla-preview" class="notice"></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Create incident</button></div></form>`);
+  const defaultRouter = state.routers[0];
+  const defaultTower = state.towers[0];
+  return formModal("Create New Incident", `<form id="incident-form"><input type="hidden" name="routerId" value="${defaultRouter?.id || ""}"><input type="hidden" name="towerId" value="${defaultTower?.id || ""}"><input type="hidden" name="scope" value="router"><div class="compact-form"><div class="form-group full"><label>Incident Title <span class="text-red">*</span></label><input required name="title" class="field" placeholder="Enter incident title"></div><div class="form-group full"><label>Category <span class="text-red">*</span></label><select required name="category" class="field"><option value="">Select a category</option><option>Connectivity</option><option>Performance</option><option>Hardware</option><option>Planned maintenance</option><option>Others</option></select></div><div class="form-group full"><label>Description <span class="text-red">*</span></label><textarea required name="description" class="field" placeholder="Enter incident description"></textarea></div></div><div class="form-actions modal-actions"><button type="submit" name="intent" value="draft" class="btn btn-secondary">Save Draft</button><button type="submit" name="intent" value="submit" class="btn btn-primary modal-submit">Submit Incident</button></div></form>`);
 }
 function userForm(existing = {}) {
   const labels = { operator: "Network Operator", lead: "Technical Lead", engineer: "Field Engineer" };
@@ -291,7 +413,6 @@ function render() {
   if (!allowed(accessPage)) state.page = "dashboard";
   let content = state.page === "dashboard" ? dashboard()
     : state.page === "incidents" ? incidentsView()
-    : state.page === "create" ? createIncidentView()
     : state.page === "infrastructure" ? infrastructureView()
     : state.page === "escalations" ? escalationsView()
     : state.page === "field" ? fieldView()
@@ -331,6 +452,11 @@ function createIncident(form) {
     return;
   }
   const data = Object.fromEntries(new FormData(form));
+  const intent = data.intent;
+  if (intent === "draft") {
+    toast("Draft saved locally");
+    return;
+  }
   const router = state.routers.find((item) => item.id === data.routerId);
   const tower = state.towers.find((item) => item.id === data.towerId);
   if (!router || !tower) return toast("Select a valid network asset", "error");
@@ -383,6 +509,14 @@ function updateTask(task) {
 }
 
 document.addEventListener("click", (event) => {
+  const incidentStatus = event.target.closest("[data-incident-status]")?.dataset.incidentStatus;
+  if (incidentStatus) {
+    state.customerIncidentQuickStatus = state.customerIncidentQuickStatus === incidentStatus ? "" : incidentStatus;
+    const statusFilter = document.getElementById("status-filter");
+    if (statusFilter) statusFilter.value = "";
+    refreshIncidentResults();
+    return;
+  }
   const page = event.target.closest("[data-page]")?.dataset.page;
   if (page) {
     if (!rolePages().includes(page) || !allowed(page)) {
@@ -406,6 +540,7 @@ document.addEventListener("click", (event) => {
   if (action === "new-user") { openModal(userForm()); return; }
   if (action === "new-policy") { openModal(policyForm()); return; }
   if (action === "new-customer") { openModal(customerForm()); return; }
+  if (action === "new-incident") { openModal(incidentModal()); return; }
   if (action === "new-task") {
     const taskAction = event.target.closest("[data-action]");
     openModal(taskForm(taskAction?.dataset.incident || ""));
@@ -415,7 +550,7 @@ document.addEventListener("click", (event) => {
   if (action === "escalate") { const incident = state.incidents.find((item) => item.id === event.target.closest("[data-action]").dataset.id); incident.status = "Escalated"; incident.escalated = true; incident.timeline.push({ title: "Escalated to Technical Lead", actor: currentUser().name, at: now() }); log(`Escalated ${incident.id}`); save(); toast("Incident escalated to Technical Lead"); render(); return; }
   if (action === "close-incident") { const incident = state.incidents.find((item) => item.id === event.target.closest("[data-action]").dataset.id); incident.status = "Resolved"; incident.timeline.push({ title: "Incident resolved and closed", actor: currentUser().name, at: now() }); log(`Closed ${incident.id}`); save(); toast("Incident resolved"); render(); return; }
   if (action === "validate") { const incident = state.incidents.find((item) => item.id === event.target.closest("[data-action]").dataset.id); incident.status = "Pending validation"; incident.timeline.push({ title: "Technical validation completed", actor: currentUser().name, at: now() }); log(`Validated ${incident.id}`); save(); toast("Technical validation recorded"); render(); return; }
-  if (action === "export") { const csv = ["Incident,Title,Priority,Status,Affected customers", ...state.incidents.map((item) => `${item.id},"${item.title}",${item.priority},${item.status},${item.affected}`)].join("\n"); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); link.download = "nims-incidents.csv"; link.click(); toast("CSV export downloaded"); return; }
+  if (action === "export") { const csv = ["Incident,Title,Priority,Status,Affected customers", ...state.incidents.map((item) => `${item.id},"${item.title}",${item.priority},${item.status},${item.affected}`)].join("\n"); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); link.download = "impactflow-incidents.csv"; link.click(); toast("CSV export downloaded"); return; }
   if (action === "save-settings") { toast("Settings saved"); return; }
   const edit = event.target.closest("[data-edit]")?.dataset.edit;
   if (edit) { const [type, value] = edit.split(":"); const item = type === "tower" ? state.towers.find((tower) => tower.id === value) : type === "router" ? state.routers.find((router) => router.id === value) : type === "user" ? state.users.find((user) => user.id === value) : type === "policy" ? state.policies.find((policy) => policy.id === value) : state.customers.find((customer) => customer.id === value); openModal(type === "tower" ? towerForm(item) : type === "router" ? routerForm(item) : type === "user" ? userForm(item) : type === "policy" ? policyForm(item) : customerForm(item)); return; }
@@ -449,13 +584,14 @@ document.addEventListener("submit", (event) => {
 });
 
 document.addEventListener("input", (event) => {
+  if (event.target.id === "incident-date-picker") {
+    state.customerIncidentFilter = { type: "custom", date: event.target.value || localDateInput(new Date()) };
+    save(); refreshIncidentResults();
+    return;
+  }
   if (["incident-scope", "incident-router", "incident-tower"].includes(event.target.id)) updateSlaPreview();
   if (["incident-search", "status-filter", "priority-filter", "category-filter"].includes(event.target.id)) {
-    const query = document.getElementById("incident-search")?.value.toLowerCase() || "";
-    const status = document.getElementById("status-filter")?.value || "";
-    const priority = document.getElementById("priority-filter")?.value || "";
-    const category = document.getElementById("category-filter")?.value || "";
-    document.getElementById("incident-results").innerHTML = incidentTable(state.incidents.filter((incident) => `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query) && (!status || incident.status === status) && (!priority || incident.priority === priority) && (!category || incident.category === category)));
+    refreshIncidentResults();
   }
   if (["tower-search", "tower-status"].includes(event.target.id)) {
     const query = document.getElementById("tower-search")?.value.toLowerCase() || "", status = document.getElementById("tower-status")?.value || "";
@@ -470,6 +606,20 @@ document.addEventListener("input", (event) => {
     const customers = state.session === "customer" ? state.customers.filter((customer) => customer.name === currentUser().name) : state.customers;
     document.getElementById("customer-results").innerHTML = customerTable(customers.filter((customer) => `${customer.id} ${customer.name} ${customer.email}`.toLowerCase().includes(query) && (!status || customer.status === status)));
   }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target.id === "incident-date-filter") {
+    const dateFilter = customerIncidentFilter();
+    state.customerIncidentFilter = { ...dateFilter, type: event.target.value };
+    if (!state.customerIncidentFilter.date) state.customerIncidentFilter.date = localDateInput(new Date());
+    document.getElementById("incident-date-picker")?.classList.toggle("hidden", event.target.value !== "custom");
+    save();
+    refreshIncidentResults();
+    return;
+  }
+  if (event.target.id === "status-filter") state.customerIncidentQuickStatus = "";
+  if (["status-filter", "priority-filter", "category-filter"].includes(event.target.id)) refreshIncidentResults();
 });
 
 function openModal(html) { document.body.insertAdjacentHTML("beforeend", html); updateSlaPreview(); }

@@ -11,4 +11,4 @@ export const leadDashboard = {
   panels: ["lead-escalations", "lead-field", "lead-breaches"]
 };
 
-export const leadNavigation = ["dashboard", "incidents", "escalations", "field", "notifications", "settings"];
+export const leadNavigation = ["dashboard", "incidents", "escalations", "notifications", "settings"];

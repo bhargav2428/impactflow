@@ -14,6 +14,6 @@ export const customerDashboard = {
 export const customerNavigation = ["dashboard", "incidents", "create", "notifications", "settings"];
 
 const customerIncidents = (state) => {
-  const account = state.customers.find((customer) => customer.name === "Aditi Sharma");
+  const account = state.customers.find((customer) => customer.name === (state.authUser?.name || "Aditi Sharma"));
   return account ? state.incidents.filter((incident) => incident.routerId === account.routerId) : [];
 };

@@ -11,6 +11,8 @@ Open `http://127.0.0.1:8765/index.html`.
 
 The login screen provides demo access for Network Admin, Network Operator, Technical Lead, Field Engineer and Customer. Changes persist in the browser's LocalStorage.
 
+The Network Admin creates customer accounts and Operator, Technical Lead and Field Engineer accounts from the management pages. Each account requires an email and password and can then sign in through the same root login. Only Customer accounts can create incidents; other roles can only work within their assigned queues and workflows. Towers and routers use only Active or Deactivated status and do not require IP, MAC or coordinate data. Technical Leads assign field engineers directly from each incident's detail page.
+
 ## Demo login accounts
 
 | Role | Email | Password |

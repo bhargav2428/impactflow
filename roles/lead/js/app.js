@@ -113,6 +113,12 @@ if (window.NIMS_ROLE_PAGE) {
 }
 const save = () => saveState(state);
 const currentUser = () => state.authUser ? { ...roles[state.session], ...state.authUser } : roles[state.session];
+const recordFieldUpdate = (task, message) => {
+  const at = now();
+  task.updatedAt = at;
+  task.updates ||= [];
+  task.updates.unshift({ message, status: task.status, actor: currentUser().name, at });
+};
 const rolePages = () => roleNavigation[state.session] || [];
 const ownsIncident = (incident) => {
   if (state.session === "customer") {

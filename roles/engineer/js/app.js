@@ -2,7 +2,6 @@ import { roles } from "./shared/roles.js";
 import { canAccess } from "./shared/permissions.js";
 import { loadState, saveState } from "./shared/storage.js";
 import { selectPolicy } from "./shared/sla.js";
-import { authenticate, demoAccounts } from "./shared/auth.js";
 import { roleDashboards, roleNavigation } from "./roles/index.js";
 
 const nav = [
@@ -108,26 +107,9 @@ if (window.NIMS_ROLE_PAGE) {
   state.session = window.NIMS_ROLE_PAGE;
   state.page = "dashboard";
   saveState(state);
-} else {
-  state.session = null;
 }
 const save = () => saveState(state);
 const currentUser = () => roles[state.session];
-const ensureRoleStyles = () => {
-  if (window.NIMS_ROLE_PAGE) return;
-  let link = document.getElementById("role-styles");
-  if (!state.session) {
-    link?.remove();
-    return;
-  }
-  if (!link) {
-    link = document.createElement("link");
-    link.id = "role-styles";
-    link.rel = "stylesheet";
-    document.head.append(link);
-  }
-  link.href = `assets/css/roles/${state.session}.css`;
-};
 const rolePages = () => roleNavigation[state.session] || [];
 const ownsIncident = (incident) => {
   if (state.session === "customer") {
@@ -149,10 +131,6 @@ const metric = (label, value, width, tone = "blue") => `<div class="metric-row">
 const fieldTaskTable = (tasks) => tasks.length
   ? `<div class="table-wrap"><table><thead><tr><th>Request</th><th>Incident</th><th>Status</th></tr></thead><tbody>${tasks.slice(0, 7).map((task) => `<tr><td class="primary-text">${task.id}</td><td>${task.incidentId}</td><td>${badge(task.status)}</td></tr>`).join("")}</tbody></table></div>`
   : `<div class="empty">No field tasks assigned.</div>`;
-
-function loginView() {
-  return `<div class="login-screen"><div class="login-card"><div class="brand"><div class="brand-mark">N</div><div><strong>NIMS</strong><small>Network operations</small></div></div><h1>Welcome back</h1><p class="subhead">Sign in to your network operations workspace.</p><form id="login-form"><div class="form-group"><label for="login-email">Work email</label><input id="login-email" name="email" type="email" class="field" placeholder="you@nims.test" autocomplete="username" required></div><div class="form-group"><label for="login-password">Password</label><input id="login-password" name="password" type="password" class="field" placeholder="Enter your password" autocomplete="current-password" required></div><p id="login-error" class="login-error hidden" role="alert">Invalid email or password.</p><button class="btn btn-primary" type="submit">Sign in to NIMS <span>→</span></button></form><div class="demo-note"><strong>Demo accounts</strong><br>Select a role to autofill its credentials:<select id="demo-role" class="field"><option value="">Choose a demo role</option>${Object.entries(demoAccounts).map(([key, account]) => `<option value="${key}">${account.label} · ${account.email}</option>`).join("")}</select><span class="demo-credentials">Password format: Role@123</span></div></div></div>`;
-}
 
 function navItem(key, label, icon) {
   if (!rolePages().includes(key) || !allowed(key)) return "";
@@ -299,8 +277,10 @@ function policyForm(existing = {}) {
 }
 
 function render() {
-  ensureRoleStyles();
-  if (!state.session) { document.getElementById("app").innerHTML = loginView(); return; }
+  if (!state.session) {
+    window.location.href = "../../index.html";
+    return;
+  }
   if (!rolePages().includes(state.page.split(":")[0]) && !state.page.startsWith("detail:")) state.page = "dashboard";
   if (!allowed(state.page.split(":")[0])) state.page = "dashboard";
   let content = state.page === "dashboard" ? dashboard()
@@ -404,11 +384,10 @@ document.addEventListener("click", (event) => {
   const incidentRow = event.target.closest("tr[data-incident]");
   if (incidentRow) { state.page = `detail:${incidentRow.dataset.incident}`; save(); render(); return; }
   const action = event.target.closest("[data-action]")?.dataset.action;
-  if (action === "login") { return; }
   if (action === "logout") {
     state.session = null;
     save();
-    window.location.href = window.NIMS_ROLE_PAGE ? "../../index.html" : "index.html";
+    window.location.href = "../../index.html";
     return;
   }
   if (action === "close-modal") { document.getElementById("modal")?.remove(); return; }
@@ -440,22 +419,6 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("submit", (event) => {
   event.preventDefault();
-  if (event.target.id === "login-form") {
-    const data = Object.fromEntries(new FormData(event.target));
-    const result = authenticate(data.email, data.password);
-    const error = document.getElementById("login-error");
-    if (!result) {
-      error.classList.remove("hidden");
-      document.getElementById("login-password").select();
-      return;
-    }
-    state.session = result.role;
-    state.page = "dashboard";
-    state.loginAt = now();
-    save();
-    window.location.href = window.NIMS_ROLE_PAGE ? "../../index.html" : `roles/${result.role}/index.html`;
-    return;
-  }
   if (event.target.id === "incident-form") createIncident(event.target);
   if (event.target.id === "tower-form") saveTower(event.target);
   if (event.target.id === "router-form") saveRouter(event.target);
@@ -473,15 +436,6 @@ document.addEventListener("submit", (event) => {
   if (event.target.id === "report-form") { const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); const data = Object.fromEntries(new FormData(event.target)); Object.assign(task, data); const incident = state.incidents.find((item) => item.id === task.incidentId); incident.timeline.push({ title: "Field engineer report submitted", actor: currentUser().name, at: now() }); log(`Submitted report for ${task.id}`); save(); document.getElementById("modal")?.remove(); toast("Repair report submitted for verification"); render(); }
   if (event.target.id === "verify-form") { const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); task.status = "Completed"; const incident = state.incidents.find((item) => item.id === task.incidentId); incident.timeline.push({ title: "Field report verified", actor: currentUser().name, at: now() }); log(`Verified report ${task.id}`); save(); document.getElementById("modal")?.remove(); toast("Field work verified"); render(); }
   if (event.target.id === "task-update-form") { const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); Object.assign(task, Object.fromEntries(new FormData(event.target))); save(); document.getElementById("modal")?.remove(); toast("Field request updated"); render(); }
-});
-
-document.addEventListener("change", (event) => {
-  if (event.target.id !== "demo-role") return;
-  const account = demoAccounts[event.target.value];
-  if (!account) return;
-  document.getElementById("login-email").value = account.email;
-  document.getElementById("login-password").value = account.password;
-  document.getElementById("login-error")?.classList.add("hidden");
 });
 
 document.addEventListener("input", (event) => {

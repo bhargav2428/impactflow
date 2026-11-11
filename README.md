@@ -6,6 +6,8 @@ NIMS is a vanilla HTML/CSS/JavaScript network incident management frontend. It u
 
 ```text
 index.html
+login.js
+login.css
 roles/
   admin/
     index.html
@@ -18,6 +20,7 @@ roles/
       roles/admin.js
       roles/index.js
       shared/
+      ...
   operator/
     index.html
     css/
@@ -33,41 +36,19 @@ roles/
   customer/
     index.html
     css/
+      styles.css
+      role.css
     js/
-assets/
-  css/
-    styles.css
-    roles/
-      admin.css
-      operator.css
-      lead.css
-      engineer.css
-      customer.css
-  js/
-    app.js
-    role-pages/
-      admin.js
-      operator.js
-      lead.js
-      engineer.js
-      customer.js
-    shared/
-      permissions.js
-      roles.js
-      sla.js
-      storage.js
-    roles/
-      admin.js
-      operator.js
-      lead.js
-      engineer.js
-      customer.js
-      index.js
+      app.js
+      main.js
+      roles/customer.js
+      roles/index.js
+      shared/
 ```
 
-`app.js` owns shared routing, rendering primitives, forms and workflow actions. Each role module defines its own dashboard configuration and allowed navigation. Each role also has a scoped stylesheet loaded only after that role signs in. Shared modules keep role metadata, permissions, SLA selection and LocalStorage access separate from UI rendering.
+The root login is a standalone static page implemented by `login.js` and `login.css`. Each role package contains its own complete HTML entry, CSS, role theme, runtime, dashboard configuration, permissions, role metadata, SLA helpers and LocalStorage helper. There is no root `assets/` runtime and no role package imports another role package.
 
-Each role is a self-contained package. The login page redirects to `roles/admin/index.html`, `roles/operator/index.html`, `roles/lead/index.html`, `roles/engineer/index.html`, or `roles/customer/index.html`. Every package owns its HTML entry, complete CSS, role theme, application runtime, role dashboard configuration and local shared modules. No role page imports another role page or another role's controller.
+The login page redirects to `roles/admin/index.html`, `roles/operator/index.html`, `roles/lead/index.html`, `roles/engineer/index.html`, or `roles/customer/index.html`. A role page redirects unauthenticated direct access back to the root login.
 
 ## Role page boundaries
 

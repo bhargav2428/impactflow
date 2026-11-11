@@ -12,7 +12,7 @@
   <template id="app-shell-template">
     <div class="app-shell">
       <aside class="sidebar">
-        <div class="brand"><div class="brand-mark">N</div><div><strong>NIMS</strong><small>Network operations</small></div></div>
+        <div class="brand"><div class="brand-mark">I</div><div><strong>ImpactFlow</strong><small>Network operations</small></div></div>
         <nav aria-label="Workspace navigation">
           <div class="nav-label">Workspace</div>
           <div>
@@ -63,32 +63,9 @@
     <div>
       <div data-dashboard-heading></div>
       <div class="stats" data-dashboard-stats></div>
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head"><h2 data-activity-title></h2><div data-activity-action></div></div>
-          <div data-activity-content></div>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><h2>Priority distribution</h2></div>
-          <div class="metric-list">
-            <div class="metric-row"><div class="metric-title"><span>P1 · Critical</span><strong data-priority-value="P1">0</strong></div><div class="bar red"><span data-priority-bar="P1"></span></div></div>
-            <div class="metric-row"><div class="metric-title"><span>P2 · High</span><strong data-priority-value="P2">0</strong></div><div class="bar"><span data-priority-bar="P2"></span></div></div>
-            <div class="metric-row"><div class="metric-title"><span>P3 · Medium</span><strong data-priority-value="P3">0</strong></div><div class="bar amber"><span data-priority-bar="P3"></span></div></div>
-            <div class="metric-row"><div class="metric-title"><span>P4 · Low</span><strong data-priority-value="P4">0</strong></div><div class="bar green"><span data-priority-bar="P4"></span></div></div>
-          </div>
-        </div>
-      </div>
       <div class="panel">
-        <div class="panel-head"><h2>Incident activity</h2><button class="panel-link" data-incident-queue-link>Open queue →</button></div>
-        <div class="chart">
-          <div class="bar-col"><i data-chart-height="42"></i>Mon</div>
-          <div class="bar-col"><i data-chart-height="67"></i>Tue</div>
-          <div class="bar-col"><i data-chart-height="55"></i>Wed</div>
-          <div class="bar-col"><i data-chart-height="88"></i>Thu</div>
-          <div class="bar-col"><i data-chart-height="63"></i>Fri</div>
-          <div class="bar-col"><i data-chart-height="76"></i>Sat</div>
-          <div class="bar-col"><i data-chart-height="96"></i>Sun</div>
-        </div>
+        <div class="panel-head"><h2 data-activity-title></h2><div data-activity-action></div></div>
+        <div data-activity-content></div>
       </div>
     </div>
   </template>

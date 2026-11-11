@@ -124,6 +124,36 @@ const ownsIncident = (incident) => {
   return state.session === "admin";
 };
 const visibleIncidents = () => state.incidents.filter(ownsIncident);
+const localDateInput = (value) => {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
+const incidentDateFilter = () => state.staffIncidentDateFilter || (state.staffIncidentDateFilter = { type: "all", date: localDateInput(new Date()) });
+const matchesIncidentDate = (incident) => {
+  const filter = incidentDateFilter();
+  if (filter.type === "today") return localDateInput(incident.createdAt) === localDateInput(new Date());
+  if (filter.type === "yesterday") {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return localDateInput(incident.createdAt) === localDateInput(yesterday);
+  }
+  return filter.type !== "custom" || localDateInput(incident.createdAt) === filter.date;
+};
+const refreshIncidentResults = () => {
+  const results = document.getElementById("incident-results");
+  if (!results) return;
+  const query = document.getElementById("incident-search")?.value.toLowerCase() || "";
+  const status = document.getElementById("status-filter")?.value || "";
+  const priority = document.getElementById("priority-filter")?.value || "";
+  const category = document.getElementById("category-filter")?.value || "";
+  results.innerHTML = incidentTable(visibleIncidents().filter((incident) =>
+    matchesIncidentDate(incident) &&
+    `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query) &&
+    (!status || incident.status === status) &&
+    (!priority || incident.priority === priority) &&
+    (!category || incident.category === category)
+  ));
+};
 const policyFor = (count) => selectPolicy(state.policies, count);
 const log = (title) => { state.audit.unshift({ title, actor: currentUser()?.name || "System", at: now() }); };
 const allowed = (page) => {
@@ -185,7 +215,7 @@ function dashboard() {
   const dashboardAction = state.session === "admin" ? "infrastructure" : action;
   const dashboardActionLabel = state.session === "admin" ? "View infrastructure" : state.session === "engineer" ? "View field work" : state.session === "lead" ? "Review escalations" : state.session === "customer" ? "Raise incident" : "Open incident queue";
   const stats = config.stats.map(([label, value, trend]) => stat(label, value(state), trend)).join("");
-  const panelTitle = state.session === "lead" ? "Escalation workload" : state.session === "engineer" ? "Assigned field work" : state.session === "customer" ? "My recent tickets" : "Incident activity";
+  const panelTitle = state.session === "lead" ? "Escalation workload" : state.session === "engineer" ? "Assigned field work" : state.session === "customer" ? "My recent tickets" : "Recent incidents";
   const panelItems = state.session === "lead" ? state.incidents.filter((item) => item.escalated) : state.session === "engineer" ? state.fieldTasks : visible;
   const template = document.getElementById("dashboard-template");
   if (template) {
@@ -197,24 +227,9 @@ function dashboard() {
     view.querySelector("[data-activity-content]").innerHTML = state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7));
     const activityAction = view.querySelector("[data-activity-action]");
     if (hasIncidentWorkspace) activityAction.innerHTML = `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>`;
-    const queueLink = view.querySelector("[data-incident-queue-link]");
-    if (!hasIncidentWorkspace) queueLink.remove();
-    else queueLink.dataset.page = "incidents";
-    const priorityCounts = {
-      P1: visible.filter((incident) => incident.priority === "P1").length,
-      P2: visible.filter((incident) => incident.priority === "P2").length,
-      P3: visible.filter((incident) => incident.priority === "P3").length,
-      P4: visible.filter((incident) => incident.priority === "P4").length
-    };
-    const priorityWidths = { P1: 100, P2: 75, P3: 50, P4: 30 };
-    Object.entries(priorityCounts).forEach(([priority, count]) => {
-      view.querySelector(`[data-priority-value="${priority}"]`).textContent = count;
-      view.querySelector(`[data-priority-bar="${priority}"]`).style.width = `${Math.max(priorityWidths[priority], count ? 13 : 3)}%`;
-    });
-    view.querySelectorAll("[data-chart-height]").forEach((bar) => { bar.style.height = `${bar.dataset.chartHeight}%`; });
     return view.outerHTML;
   }
-  return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`)}<div class="stats">${stats}</div><div class="grid-2"><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>` : ""}</div>${state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7))}</div><div class="panel"><div class="panel-head"><h2>Priority distribution</h2></div><div class="metric-list">${metric("P1 · Critical", visible.filter((i) => i.priority === "P1").length, 100, "red")}${metric("P2 · High", visible.filter((i) => i.priority === "P2").length, 75)}${metric("P3 · Medium", visible.filter((i) => i.priority === "P3").length, 50, "amber")}${metric("P4 · Low", visible.filter((i) => i.priority === "P4").length, 30, "green")}</div></div></div><div class="panel"><div class="panel-head"><h2>Incident activity</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="incidents">Open queue →</button>` : ""}</div><div class="chart">${[42, 67, 55, 88, 63, 76, 96].map((height, index) => `<div class="bar-col"><i style="height:${height}%"></i>${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}</div>`).join("")}</div></div>`;
+  return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`)}<div class="stats">${stats}</div><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>` : ""}</div>${state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7))}</div>`;
 }
 
 function incidentTable(items) {
@@ -224,9 +239,11 @@ function incidentTable(items) {
 }
 
 function incidentsView() {
-  const controls = `<div class="filters"><input class="search" id="incident-search" placeholder="Search ID, title or assignee"><select class="field" id="status-filter"><option value="">All statuses</option>${["Open", "Investigating", "Escalated", "Pending validation", "Resolved"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="priority-filter"><option value="">All priorities</option>${["P1", "P2", "P3", "P4"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="category-filter"><option value="">All categories</option><option>Connectivity</option><option>Performance</option><option>Hardware</option></select></div>`;
+  const dateFilter = incidentDateFilter();
+  const controls = `<div class="filters"><input class="search" id="incident-search" placeholder="Search ID, title or assignee"><select class="field" id="status-filter"><option value="">All statuses</option>${["Open", "Investigating", "Escalated", "Pending validation", "Resolved"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="priority-filter"><option value="">All priorities</option>${["P1", "P2", "P3", "P4"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="category-filter"><option value="">All categories</option><option>Connectivity</option><option>Performance</option><option>Hardware</option></select><select class="field" id="incident-date-filter" aria-label="Filter by date"><option value="all" ${dateFilter.type === "all" ? "selected" : ""}>All dates</option><option value="today" ${dateFilter.type === "today" ? "selected" : ""}>Today</option><option value="yesterday" ${dateFilter.type === "yesterday" ? "selected" : ""}>Yesterday</option><option value="custom" ${dateFilter.type === "custom" ? "selected" : ""}>Select from calendar</option></select><input id="incident-date-picker" type="date" class="field ${dateFilter.type === "custom" ? "" : "hidden"}" value="${dateFilter.date}" aria-label="Select incident date"></div>`;
   const action = state.session === "customer" ? `<button class="btn btn-primary" data-page="create">＋ Raise incident</button>` : "";
-  return `${pageHead(state.session === "customer" ? "My incidents" : "Incident management", state.session === "customer" ? "Track your own network support tickets and resolutions." : "Search, filter and action the network incident queue.", action)}<div class="panel">${controls}<div id="incident-results">${incidentTable(visibleIncidents())}</div></div>`;
+  const incidents = visibleIncidents().filter(matchesIncidentDate);
+  return `${pageHead(state.session === "customer" ? "My incidents" : "Incident management", state.session === "customer" ? "Track your own network support tickets and resolutions." : "Search, filter and action the network incident queue.", action)}<div class="panel">${controls}<div id="incident-results">${incidentTable(incidents)}</div></div>`;
 }
 
 function createIncidentView() {
@@ -506,13 +523,7 @@ document.addEventListener("submit", (event) => {
 
 document.addEventListener("input", (event) => {
   if (["incident-scope", "incident-router", "incident-tower"].includes(event.target.id)) updateSlaPreview();
-  if (["incident-search", "status-filter", "priority-filter", "category-filter"].includes(event.target.id)) {
-    const query = document.getElementById("incident-search")?.value.toLowerCase() || "";
-    const status = document.getElementById("status-filter")?.value || "";
-    const priority = document.getElementById("priority-filter")?.value || "";
-    const category = document.getElementById("category-filter")?.value || "";
-    document.getElementById("incident-results").innerHTML = incidentTable(state.incidents.filter((incident) => `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query) && (!status || incident.status === status) && (!priority || incident.priority === priority) && (!category || incident.category === category)));
-  }
+  if (["incident-search", "status-filter", "priority-filter", "category-filter", "incident-date-picker"].includes(event.target.id)) refreshIncidentResults();
   if (["tower-search", "tower-status"].includes(event.target.id)) {
     const query = document.getElementById("tower-search")?.value.toLowerCase() || "", status = document.getElementById("tower-status")?.value || "";
     document.getElementById("tower-results").innerHTML = towerTable(state.towers.filter((tower) => `${tower.id} ${tower.name} ${tower.location}`.toLowerCase().includes(query) && (!status || tower.status === status)));
@@ -526,6 +537,19 @@ document.addEventListener("input", (event) => {
     const customers = state.session === "customer" ? state.customers.filter((customer) => customer.name === currentUser().name) : state.customers;
     document.getElementById("customer-results").innerHTML = customerTable(customers.filter((customer) => `${customer.id} ${customer.name} ${customer.email}`.toLowerCase().includes(query) && (!status || customer.status === status)));
   }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target.id === "incident-date-filter") {
+    incidentDateFilter().type = event.target.value;
+    document.getElementById("incident-date-picker")?.classList.toggle("hidden", event.target.value !== "custom");
+    save();
+  } else if (event.target.id === "incident-date-picker") {
+    incidentDateFilter().date = event.target.value;
+    save();
+  }
+  if (["incident-date-filter", "status-filter", "priority-filter", "category-filter"].includes(event.target.id)) refreshIncidentResults();
+  if (event.target.id === "incident-date-picker") refreshIncidentResults();
 });
 
 function openModal(html) { document.body.insertAdjacentHTML("beforeend", html); updateSlaPreview(); }

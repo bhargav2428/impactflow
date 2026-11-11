@@ -15,4 +15,4 @@ export const adminDashboard = {
   panels: ["incident-overview", "infrastructure-health", "admin-queue"]
 };
 
-export const adminNavigation = ["dashboard", "infrastructure", "towers", "routers", "users", "customers", "sla", "reports", "audit"];
+export const adminNavigation = ["dashboard", "incidents", "infrastructure", "towers", "routers", "users", "customers", "sla", "reports", "audit"];

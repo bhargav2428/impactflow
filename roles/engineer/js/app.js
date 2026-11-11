@@ -28,6 +28,12 @@ const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&":
 const date = (value) => new Date(value).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 const cls = (value) => /resolved|operational|active|completed|verified/i.test(value) ? "green" : /critical|breach|degraded|escalated|rejected/i.test(value) ? "red" : /pending|investigating|scheduled|at risk|validation/i.test(value) ? "amber" : "blue";
 const badge = (value) => `<span class="badge ${cls(value)}">${esc(value)}</span>`;
+const demoFieldTasks = [
+  { id: "FS-110", incidentId: "INC-02401", engineer: "Vikram Singh", status: "Scheduled", location: "Whitefield East", diagnosis: "", report: "", instructions: "Inspect the router uplink and verify the fiber connection." },
+  { id: "FS-111", incidentId: "INC-02406", engineer: "Vikram Singh", status: "Scheduled", location: "Whitefield East", diagnosis: "", report: "", instructions: "Check signal levels and record the affected interface." },
+  { id: "FS-112", incidentId: "INC-02410", engineer: "Neeraj Rao", status: "Scheduled", location: "Koramangala Hub", diagnosis: "", report: "", instructions: "Inspect site connectivity and test the backup link." },
+  { id: "FS-113", incidentId: "INC-02411", engineer: "Vikram Singh", status: "In progress", location: "Andheri Central", diagnosis: "Intermittent loss detected on the uplink.", report: "", instructions: "Replace or reseat the uplink cable, then run a stability test." }
+];
 const toast = (message, type = "") => {
   const node = document.createElement("div");
   node.className = `toast ${type}`;
@@ -91,8 +97,10 @@ function createSeed() {
     ],
     fieldTasks: [
       { id: "FS-108", incidentId: "INC-02402", engineer: "Vikram Singh", status: "In progress", location: "Salt Lake Sector V", diagnosis: "", report: "" },
-      { id: "FS-109", incidentId: "INC-02408", engineer: "Neeraj Rao", status: "Scheduled", location: "Andheri Central", diagnosis: "", report: "" }
+      { id: "FS-109", incidentId: "INC-02408", engineer: "Neeraj Rao", status: "Scheduled", location: "Andheri Central", diagnosis: "", report: "" },
+      ...demoFieldTasks
     ],
+    instrumentRequests: [],
     notifications: [
       { id: "NT-1", title: "P1 SLA breach risk", detail: "INC-02402 needs immediate review.", read: false, at: now() },
       { id: "NT-2", title: "Field report submitted", detail: "FS-109 is ready for validation.", read: false, at: now() }
@@ -100,8 +108,14 @@ function createSeed() {
     audit: []
   };
 }
-
 let state = loadState(createSeed);
+state.instrumentRequests ||= [];
+for (const task of demoFieldTasks) {
+  if (!state.fieldTasks.some((existing) => existing.id === task.id)
+    && state.incidents.some((incident) => incident.id === task.incidentId)) {
+    state.fieldTasks.push({ ...task });
+  }
+}
 state.towers = state.towers.map((tower) => { const clean = { ...tower, status: tower.status === "Active" ? "Active" : "Deactivated" }; delete clean.coordinates; return clean; });
 state.routers = state.routers.map((router) => { const clean = { ...router, status: router.status === "Active" ? "Active" : "Deactivated" }; delete clean.ip; delete clean.mac; return clean; });
 state.customers = state.customers.map((customer) => ({ ...customer, status: customer.status === "Inactive" ? "Inactive" : "Active" }));
@@ -121,9 +135,39 @@ const ownsIncident = (incident) => {
   }
   if (state.session === "operator") return incident.assignee === currentUser().name;
   if (state.session === "lead") return incident.escalated || ["Escalated", "Pending validation"].includes(incident.status);
+  if (state.session === "engineer") return state.fieldTasks.some((task) => task.incidentId === incident.id && task.engineer === currentUser().name);
   return state.session === "admin";
 };
 const visibleIncidents = () => state.incidents.filter(ownsIncident);
+const localDateKey = (value) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}-${String(parsed.getDate()).padStart(2, "0")}`;
+};
+const matchesEngineerDate = (task, filter) => {
+  if (!filter) return true;
+  const incident = state.incidents.find((item) => item.id === task.incidentId);
+  if (!incident) return false;
+  const target = new Date();
+  if (filter === "tomorrow") target.setDate(target.getDate() + 1);
+  return localDateKey(incident.createdAt) === localDateKey(target);
+};
+const filteredEngineerTasks = () => {
+  const query = document.getElementById("incident-search")?.value.toLowerCase() || "";
+  const status = document.getElementById("status-filter")?.value || "";
+  const priority = document.getElementById("priority-filter")?.value || "";
+  const category = document.getElementById("category-filter")?.value || "";
+  const dateFilter = document.getElementById("engineer-date-filter")?.value || "";
+  return state.fieldTasks.filter((task) => {
+    if (task.engineer !== currentUser().name || !matchesEngineerDate(task, dateFilter)) return false;
+    const incident = state.incidents.find((item) => item.id === task.incidentId);
+    return Boolean(incident
+      && `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query)
+      && (!status || incident.status === status)
+      && (!priority || incident.priority === priority)
+      && (!category || incident.category === category));
+  });
+};
 const policyFor = (count) => selectPolicy(state.policies, count);
 const log = (title) => { state.audit.unshift({ title, actor: currentUser()?.name || "System", at: now() }); };
 const allowed = (page) => {
@@ -132,7 +176,7 @@ const allowed = (page) => {
 const stat = (label, value, trend, tone = "") => `<div class="stat-card"><span class="stat-label">${label}</span><strong class="stat-value ${tone}">${value}</strong><span class="stat-trend">${trend}</span></div>`;
 const metric = (label, value, width, tone = "blue") => `<div class="metric-row"><div class="metric-title"><span>${label}</span><strong>${value}</strong></div><div class="bar ${tone}"><span style="width:${Math.max(width, value ? 13 : 3)}%"></span></div></div>`;
 const fieldTaskTable = (tasks) => tasks.length
-  ? `<div class="table-wrap"><table><thead><tr><th>Request</th><th>Incident</th><th>Status</th></tr></thead><tbody>${tasks.slice(0, 7).map((task) => `<tr><td class="primary-text">${task.id}</td><td>${task.incidentId}</td><td>${badge(task.status)}</td></tr>`).join("")}</tbody></table></div>`
+  ? `<div class="table-wrap"><table><thead><tr><th>Request</th><th>Ticket</th><th>Status</th></tr></thead><tbody>${tasks.slice(0, 7).map((task) => `<tr><td class="primary-text">${task.id}</td><td><button class="table-action" data-incident="${task.incidentId}">${task.incidentId}</button></td><td>${badge(task.status)}</td></tr>`).join("")}</tbody></table></div>`
   : `<div class="empty">No field tasks assigned.</div>`;
 
 function navItem(key, label, icon) {
@@ -155,11 +199,18 @@ function dashboard() {
   const action = config.primaryAction === "create" ? "create" : config.primaryAction;
   const hasIncidentWorkspace = rolePages().includes("incidents");
   const dashboardAction = state.session === "admin" ? "infrastructure" : action;
-  const dashboardActionLabel = state.session === "admin" ? "View infrastructure" : state.session === "engineer" ? "View field work" : state.session === "lead" ? "Review escalations" : state.session === "customer" ? "Raise incident" : "Open incident queue";
+  const dashboardActionLabel = state.session === "admin" ? "View infrastructure" : state.session === "engineer" ? "Request instrument" : state.session === "lead" ? "Review escalations" : state.session === "customer" ? "Raise incident" : "Open incident queue";
+  const dashboardActionButton = state.session === "engineer"
+    ? `<button class="btn btn-primary" data-action="request-instrument">＋ ${dashboardActionLabel}</button>`
+    : `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`;
+  const dashboardPanelLink = state.session === "engineer" ? "incidents" : action === "create" ? "incidents" : action;
   const stats = config.stats.map(([label, value, trend]) => stat(label, value(state), trend)).join("");
   const panelTitle = state.session === "lead" ? "Escalation workload" : state.session === "engineer" ? "Assigned field work" : state.session === "customer" ? "My recent tickets" : "Recent incidents";
-  const panelItems = state.session === "lead" ? state.incidents.filter((item) => item.escalated) : state.session === "engineer" ? state.fieldTasks : visible;
-  return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, `<button class="btn btn-primary" data-page="${dashboardAction}">＋ ${dashboardActionLabel}</button>`)}<div class="stats">${stats}</div><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${action === "create" ? "incidents" : action}">View all →</button>` : ""}</div>${state.session === "engineer" ? fieldTaskTable(panelItems) : incidentTable(panelItems.slice(0, 7))}</div>`;
+  const panelItems = state.session === "lead" ? state.incidents.filter((item) => item.escalated) : state.session === "engineer" ? state.fieldTasks.filter((task) => task.engineer === currentUser().name) : visible;
+  const panelContent = state.session === "engineer"
+    ? `<div class="filters"><select class="field" id="engineer-date-filter" aria-label="Filter assigned tickets by incident date"><option value="">All dates</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option></select></div><div id="engineer-ticket-results">${fieldTaskTable(panelItems)}</div>`
+    : incidentTable(panelItems.slice(0, 7));
+  return `${pageHead(config.title, `Good morning, ${currentUser().name.split(" ")[0]}. ${config.subtitle}`, dashboardActionButton)}<div class="stats">${stats}</div><div class="panel"><div class="panel-head"><h2>${panelTitle}</h2>${hasIncidentWorkspace ? `<button class="panel-link" data-page="${dashboardPanelLink}">View all →</button>` : ""}</div>${panelContent}</div>`;
 }
 
 function incidentTable(items) {
@@ -169,9 +220,14 @@ function incidentTable(items) {
 }
 
 function incidentsView() {
-  const controls = `<div class="filters"><input class="search" id="incident-search" placeholder="Search ID, title or assignee"><select class="field" id="status-filter"><option value="">All statuses</option>${["Open", "Investigating", "Escalated", "Pending validation", "Resolved"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="priority-filter"><option value="">All priorities</option>${["P1", "P2", "P3", "P4"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="category-filter"><option value="">All categories</option><option>Connectivity</option><option>Performance</option><option>Hardware</option></select></div>`;
+  const dateControl = state.session === "engineer" ? `<select class="field" id="engineer-date-filter" aria-label="Filter assigned tickets by incident date"><option value="">All dates</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option></select>` : "";
+  const controls = `<div class="filters"><input class="search" id="incident-search" placeholder="Search ID, title or assignee"><select class="field" id="status-filter"><option value="">All statuses</option>${["Open", "Investigating", "Escalated", "Pending validation", "Resolved"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="priority-filter"><option value="">All priorities</option>${["P1", "P2", "P3", "P4"].map((item) => `<option>${item}</option>`).join("")}</select><select class="field" id="category-filter"><option value="">All categories</option><option>Connectivity</option><option>Performance</option><option>Hardware</option></select>${dateControl}</div>`;
   const action = state.session === "customer" ? `<button class="btn btn-primary" data-page="create">＋ Raise incident</button>` : "";
-  return `${pageHead(state.session === "customer" ? "My incidents" : "Incident management", state.session === "customer" ? "Track your own network support tickets and resolutions." : "Search, filter and action the network incident queue.", action)}<div class="panel">${controls}<div id="incident-results">${incidentTable(visibleIncidents())}</div></div>`;
+  const incidents = state.session === "engineer"
+    ? state.fieldTasks.filter((task) => task.engineer === currentUser().name).map((task) => state.incidents.find((incident) => incident.id === task.incidentId)).filter(Boolean)
+    : visibleIncidents();
+  const assignedTable = state.session === "engineer" ? fieldTaskTable(state.fieldTasks.filter((task) => task.engineer === currentUser().name && matchesEngineerDate(task, ""))) : incidentTable(incidents);
+  return `${pageHead(state.session === "customer" ? "My incidents" : state.session === "engineer" ? "Assigned tickets" : "Incident management", state.session === "customer" ? "Track your own network support tickets and resolutions." : state.session === "engineer" ? "View tickets linked to your assigned field work." : "Search, filter and action the network incident queue.", action)}<div class="panel">${controls}<div id="incident-results">${assignedTable}</div></div>`;
 }
 
 function createIncidentView() {
@@ -184,7 +240,24 @@ function infrastructureView() {
 
 function fieldView() {
   const rows = state.fieldTasks.filter((task) => state.session !== "engineer" || task.engineer === currentUser().name);
-  return `${pageHead("Field service management", "Create requests, assign engineers and verify repair reports.", `<button class="btn btn-primary" data-action="new-task">＋ New field request</button>`)}<div class="stats">${stat("Open requests", state.fieldTasks.filter((task) => task.status !== "Completed").length, "Across active incidents")}${stat("In progress", state.fieldTasks.filter((task) => task.status === "In progress").length, "Engineers on site")}${stat("Awaiting verification", state.fieldTasks.filter((task) => task.status === "Report submitted").length, "Technical Lead action")}${stat("Engineers active", 3, "of 4 available")}</div><div class="panel"><div class="panel-head"><h2>Field requests</h2></div><div class="table-wrap"><table><thead><tr><th>Request</th><th>Incident</th><th>Engineer</th><th>Location</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.map((task) => `<tr><td class="primary-text">${task.id}</td><td>${task.incidentId}</td><td>${esc(task.engineer)}</td><td>${esc(task.location)}</td><td>${badge(task.status)}</td><td><button class="btn btn-secondary" data-task="${task.id}">${state.session === "engineer" ? "Submit report" : task.status === "Report submitted" ? "Verify report" : "Manage"}</button></td></tr>`).join("")}</tbody></table></div></div>`;
+  const ownTasks = state.session === "engineer";
+  const openTasks = rows.filter((task) => task.status !== "Completed").length;
+  const inProgressTasks = rows.filter((task) => task.status === "In progress").length;
+  const pendingVerification = rows.filter((task) => task.status === "Report submitted").length;
+  const ticketRows = (items) => items.map((task) => {
+    const actionButton = task.status === "Scheduled"
+      ? `<button class="btn btn-primary" data-action="accept-task" data-task="${task.id}">Accept ticket</button>`
+      : task.status === "In progress"
+        ? `<button class="btn btn-secondary" data-task="${task.id}">Update ticket</button>`
+        : task.status === "Report submitted" && ownTasks ? `<span class="muted">Awaiting verification</span>`
+          : task.status === "Report submitted" ? `<button class="btn btn-secondary" data-task="${task.id}">Verify report</button>`
+            : ownTasks ? `<span class="muted">Completed</span>` : `<button class="btn btn-secondary" data-task="${task.id}">Manage</button>`;
+    return `<tr><td class="primary-text">${task.id}</td><td><button class="table-action" data-open-incident="${task.incidentId}">${task.incidentId}</button></td><td>${esc(task.engineer)}</td><td>${esc(task.location)}</td><td>${badge(task.status)}</td><td>${actionButton}</td></tr>`;
+  }).join("");
+  const instrumentRequests = state.instrumentRequests.filter((request) => !ownTasks || request.requester === currentUser().name);
+  const requestPanel = ownTasks ? `<div class="panel"><div class="panel-head"><h2>My instrument requests</h2><button class="panel-link" data-action="request-instrument">＋ Request instrument</button></div>${instrumentRequests.length ? `<div class="table-wrap"><table><thead><tr><th>Equipment</th><th>Quantity</th><th>Ticket</th><th>Reason</th><th>Requested</th><th>Status</th></tr></thead><tbody>${instrumentRequests.map((request) => `<tr><td>${esc(request.instrument)}</td><td>${request.quantity}</td><td>${esc(request.incidentId || "—")}</td><td>${esc(request.reason)}</td><td>${date(request.requestedAt)}</td><td>${badge(request.status)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">No instrument requests yet.</div>`}</div>` : "";
+  const filter = ownTasks ? `<div class="filters"><select class="field" id="engineer-date-filter" aria-label="Filter tickets by incident creation date"><option value="">All dates</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option></select></div>` : "";
+  return `${pageHead(ownTasks ? "My field work" : "Field service management", ownTasks ? "Review the ticket, accept the assignment, then submit your work update." : "Create requests, assign engineers and verify repair reports.", ownTasks ? `<button class="btn btn-primary" data-action="request-instrument">＋ Request instrument</button>` : `<button class="btn btn-primary" data-action="new-task">＋ New field request</button>`)}<div class="stats">${stat(ownTasks ? "My open requests" : "Open requests", openTasks, ownTasks ? "Assigned to you" : "Across active incidents")}${stat("In progress", inProgressTasks, "Accepted work")}${stat("Awaiting verification", pendingVerification, "Technical Lead action")}${ownTasks ? "" : stat("Engineers active", 3, "of 4 available")}</div><div class="panel"><div class="panel-head"><h2>${ownTasks ? "Assigned tickets" : "Field requests"}</h2></div>${filter}<div class="table-wrap"><table><thead><tr><th>Request</th><th>Ticket</th><th>Engineer</th><th>Location</th><th>Status</th><th>Action</th></tr></thead><tbody id="engineer-field-task-rows">${ticketRows(rows)}</tbody></table></div>${rows.length ? "" : `<div class="empty">No field tickets are assigned to you.</div>`}</div>${requestPanel}`;
 }
 
 function escalationsView() {
@@ -248,12 +321,20 @@ function incidentDetail(incidentId) {
   const canClose = incident.status !== "Resolved" && ((state.session === "operator" && !incident.escalated) || state.session === "lead" || state.session === "admin");
   const isLead = state.session === "lead";
   const assignedTask = state.fieldTasks.find((task) => task.incidentId === incident.id);
-  return `${pageHead(`${incident.id} · ${esc(incident.title)}`, `${esc(tower?.name)} · Created ${date(incident.createdAt)}`, `<button class="btn btn-secondary" data-page="incidents">← Back</button>`)}<div class="detail-actions">${badge(incident.status)}${incident.status !== "Resolved" ? `<button class="btn btn-secondary" data-action="add-note" data-id="${incident.id}">＋ Add note</button>` : ""}${state.session === "operator" && !incident.escalated && incident.status !== "Resolved" ? `<button class="btn btn-secondary" data-action="escalate" data-id="${incident.id}">Escalate to lead</button>` : ""}${canClose ? `<button class="btn btn-primary" data-action="close-incident" data-id="${incident.id}">${incident.escalated ? "Lead close incident" : "Resolve incident"}</button>` : ""}</div><div class="grid-2"><div><div class="panel"><div class="panel-head"><h2>Incident overview</h2>${badge(incident.priority)}</div><div class="detail-grid"><div><span class="muted">Category</span><strong>${incident.category}</strong></div><div><span class="muted">Assigned operator</span><strong>${incident.assignee}</strong></div><div><span class="muted">Affected customers</span><strong>${incident.affected}</strong></div><div><span class="muted">SLA allocation</span><strong>${policy.id} · ${policy.resolution}h resolution</strong></div><div class="wide"><span class="muted">Description</span><strong>${esc(incident.description)}</strong></div></div></div><div class="panel"><div class="panel-head"><h2>Troubleshooting notes</h2></div>${incident.notes.map((note) => `<div class="note"><strong>${esc(note.author)}</strong><span>${date(note.at)}</span><p>${esc(note.text)}</p></div>`).join("")}</div><div class="panel"><div class="panel-head"><h2>Customer impact</h2></div>${state.customers.filter((customer) => customer.routerId === incident.routerId).map((customer) => `<div class="impact-row"><strong>${esc(customer.name)}</strong><span>${customer.email}</span>${badge(customer.status)}</div>`).join("") || `<div class="empty">No directly mapped customers.</div>`}</div></div><div><div class="panel"><div class="panel-head"><h2>SLA monitor</h2></div>${metric("Response deadline", 80, 80, "green")}${metric("Resolution deadline", incident.status === "Escalated" ? 92 : 56, incident.status === "Escalated" ? 92 : 56, incident.status === "Escalated" ? "red" : "blue")}<p class="muted sla-copy">Response: ${policy.response < 1 ? `${policy.response * 60} minutes` : `${policy.response} hours`} · Resolution: ${policy.resolution} hours<br>Response deadline: ${date(incident.responseDeadline)}<br>Resolution deadline: ${date(incident.resolutionDeadline)}</p></div><div class="panel"><div class="panel-head"><h2>Incident timeline</h2></div><div class="timeline">${incident.timeline.map((item) => `<div class="timeline-item"><i class="timeline-dot"></i><div><div class="timeline-title">${esc(item.title)}</div><div class="timeline-meta">${esc(item.actor)} · ${date(item.at)}</div></div></div>`).join("")}</div></div>${isLead ? `<div class="panel"><div class="panel-head"><h2>Field assignment</h2></div><p class="muted">${assignedTask ? `Assigned to ${esc(assignedTask.engineer)} · ${esc(assignedTask.status)}` : "Assign a field engineer directly from this incident."}</p><button class="btn btn-primary" data-action="new-task" data-incident="${incident.id}">${assignedTask ? "Change field engineer" : "Assign field engineer"}</button></div>` : ""}</div></div>`;
+  const engineerTaskPanel = state.session === "engineer" && assignedTask
+    ? `<div class="panel"><div class="panel-head"><h2>Your field assignment</h2>${badge(assignedTask.status)}</div><p class="muted">${esc(assignedTask.location)}${assignedTask.instructions ? `<br>${esc(assignedTask.instructions)}` : ""}</p>${assignedTask.status === "Scheduled" ? `<button class="btn btn-primary" data-action="accept-task" data-task="${assignedTask.id}">Accept ticket</button>` : assignedTask.status === "In progress" ? `<button class="btn btn-primary" data-task="${assignedTask.id}">Update ticket</button>` : assignedTask.status === "Report submitted" ? `<p class="muted">Your work update is awaiting verification.</p>` : `<p class="muted">This field assignment is complete.</p>`}${assignedTask.diagnosis ? `<p><strong>Diagnosis:</strong> ${esc(assignedTask.diagnosis)}</p>` : ""}${assignedTask.report ? `<p><strong>Work update:</strong> ${esc(assignedTask.report)}</p>` : ""}</div>`
+    : "";
+  const canAddNote = incident.status !== "Resolved" && (state.session !== "engineer" || assignedTask?.status === "In progress");
+  return `${pageHead(`${incident.id} · ${esc(incident.title)}`, `${esc(tower?.name)} · Created ${date(incident.createdAt)}`, `<button class="btn btn-secondary" data-page="incidents">← Back</button>`)}<div class="detail-actions">${badge(incident.status)}${canAddNote ? `<button class="btn btn-secondary" data-action="add-note" data-id="${incident.id}">＋ Add note</button>` : ""}${state.session === "operator" && !incident.escalated && incident.status !== "Resolved" ? `<button class="btn btn-secondary" data-action="escalate" data-id="${incident.id}">Escalate to lead</button>` : ""}${canClose ? `<button class="btn btn-primary" data-action="close-incident" data-id="${incident.id}">${incident.escalated ? "Lead close incident" : "Resolve incident"}</button>` : ""}</div><div class="grid-2"><div><div class="panel"><div class="panel-head"><h2>Incident overview</h2>${badge(incident.priority)}</div><div class="detail-grid"><div><span class="muted">Category</span><strong>${incident.category}</strong></div><div><span class="muted">Assigned operator</span><strong>${incident.assignee}</strong></div><div><span class="muted">Affected customers</span><strong>${incident.affected}</strong></div><div><span class="muted">SLA allocation</span><strong>${policy.id} · ${policy.resolution}h resolution</strong></div><div class="wide"><span class="muted">Description</span><strong>${esc(incident.description)}</strong></div></div></div><div class="panel"><div class="panel-head"><h2>Troubleshooting notes</h2></div>${incident.notes.map((note) => `<div class="note"><strong>${esc(note.author)}</strong><span>${date(note.at)}</span><p>${esc(note.text)}</p></div>`).join("")}</div><div class="panel"><div class="panel-head"><h2>Customer impact</h2></div>${state.customers.filter((customer) => customer.routerId === incident.routerId).map((customer) => `<div class="impact-row"><strong>${esc(customer.name)}</strong><span>${customer.email}</span>${badge(customer.status)}</div>`).join("") || `<div class="empty">No directly mapped customers.</div>`}</div></div><div><div class="panel"><div class="panel-head"><h2>SLA monitor</h2></div>${metric("Response deadline", 80, 80, "green")}${metric("Resolution deadline", incident.status === "Escalated" ? 92 : 56, incident.status === "Escalated" ? 92 : 56, incident.status === "Escalated" ? "red" : "blue")}<p class="muted sla-copy">Response: ${policy.response < 1 ? `${policy.response * 60} minutes` : `${policy.response} hours`} · Resolution: ${policy.resolution} hours<br>Response deadline: ${date(incident.responseDeadline)}<br>Resolution deadline: ${date(incident.resolutionDeadline)}</p></div><div class="panel"><div class="panel-head"><h2>Incident timeline</h2></div><div class="timeline">${incident.timeline.map((item) => `<div class="timeline-item"><i class="timeline-dot"></i><div><div class="timeline-title">${esc(item.title)}</div><div class="timeline-meta">${esc(item.actor)} · ${date(item.at)}</div></div></div>`).join("")}</div></div>${engineerTaskPanel}${isLead ? `<div class="panel"><div class="panel-head"><h2>Field assignment</h2></div><p class="muted">${assignedTask ? `Assigned to ${esc(assignedTask.engineer)} · ${esc(assignedTask.status)}` : "Assign a field engineer directly from this incident."}</p><button class="btn btn-primary" data-action="new-task" data-incident="${incident.id}">${assignedTask ? "Change field engineer" : "Assign field engineer"}</button></div>` : ""}</div></div>`;
 }
 
 function simple(title, subtitle, body) { return `${pageHead(title, subtitle)}<div class="panel">${body}</div>`; }
 
 function formModal(title, form) { return `<div class="modal-backdrop" id="modal"><div class="modal"><div class="modal-head"><h2>${title}</h2><button class="close" data-action="close-modal">×</button></div>${form}</div></div>`; }
+function instrumentRequestForm() {
+  const tickets = state.fieldTasks.filter((task) => task.engineer === currentUser().name);
+  return formModal("Request router or instrument", `<form id="instrument-request-form"><div class="form-grid"><div class="form-group"><label>Router / instrument *</label><select required name="instrument" class="field"><option value="">Select equipment</option><option>New router</option><option>Multimeter</option><option>Fiber optic power meter</option><option>OTDR</option><option>Cable tester</option><option>Other</option></select></div><div class="form-group"><label>Quantity *</label><input required type="number" min="1" max="20" name="quantity" class="field" value="1"></div><div class="form-group full"><label>Related ticket</label><select name="incidentId" class="field"><option value="">No specific ticket</option>${tickets.map((task) => `<option value="${task.incidentId}">${task.incidentId}</option>`).join("")}</select></div><div class="form-group full"><label>Reason for request *</label><textarea required name="reason" class="field" placeholder="Why is this equipment needed?"></textarea></div></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Submit request</button></div></form>`);
+}
 function towerForm(existing = {}) {
   return formModal(existing.id ? "Edit tower" : "Create tower", `<form id="tower-form" data-id="${existing.id || ""}"><div class="form-grid"><div class="form-group"><label>Tower name *</label><input required name="name" class="field" value="${esc(existing.name)}"></div><div class="form-group"><label>Location *</label><input required name="location" class="field" value="${esc(existing.location)}"></div><div class="form-group"><label>Status</label><select name="status" class="field"><option ${existing.status !== "Deactivated" ? "selected" : ""}>Active</option><option ${existing.status === "Deactivated" ? "selected" : ""}>Deactivated</option></select></div></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Save tower</button></div></form>`);
 }
@@ -377,7 +458,7 @@ function savePolicy(form) {
   state.policies.sort((a, b) => a.min - b.min); log(`Updated SLA policy ${policy.id}`); save(); document.getElementById("modal")?.remove(); toast("SLA policy saved"); render();
 }
 function updateTask(task) {
-  if (state.session === "engineer") return formModal("Update field work", `<form id="report-form" data-id="${task.id}"><div class="form-group"><label>Visit status</label><select name="status" class="field"><option ${task.status === "In progress" ? "selected" : ""}>In progress</option><option ${task.status === "Report submitted" ? "selected" : ""}>Report submitted</option></select></div><div class="form-group"><label>Diagnosis</label><textarea name="diagnosis" class="field">${esc(task.diagnosis)}</textarea></div><div class="form-group"><label>Repair report *</label><textarea required name="report" class="field">${esc(task.report)}</textarea></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Save field update</button></div></form>`);
+  if (state.session === "engineer" && task.engineer === currentUser().name && task.status === "In progress") return formModal("Update assigned ticket", `<form id="report-form" data-id="${task.id}"><div class="form-group"><label>Diagnosis *</label><textarea required name="diagnosis" class="field">${esc(task.diagnosis || "")}</textarea></div><div class="form-group"><label>Work completed and ticket update *</label><textarea required name="report" class="field">${esc(task.report || "")}</textarea></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Submit update for verification</button></div></form>`);
   if (task.status === "Report submitted" && (state.session === "lead" || state.session === "admin")) return formModal("Verify field report", `<form id="verify-form" data-id="${task.id}"><p class="muted">${esc(task.report || "No report text supplied.")}</p><div class="form-actions"><button class="btn btn-danger" data-action="reject-task" data-id="${task.id}">Reject</button><button class="btn btn-primary">Verify & complete</button></div></form>`);
   return formModal("Update field request", `<form id="task-update-form" data-id="${task.id}"><div class="form-group"><label>Status</label><select name="status" class="field"><option>Scheduled</option><option>In progress</option><option>Report submitted</option></select></div><div class="form-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button><button class="btn btn-primary">Update</button></div></form>`);
 }
@@ -393,6 +474,8 @@ document.addEventListener("click", (event) => {
   }
   const incidentRow = event.target.closest("tr[data-incident]");
   if (incidentRow) { state.page = `detail:${incidentRow.dataset.incident}`; save(); render(); return; }
+  const openIncident = event.target.closest("[data-open-incident]")?.dataset.openIncident || event.target.closest("button[data-incident]")?.dataset.incident;
+  if (openIncident) { state.page = `detail:${openIncident}`; save(); render(); return; }
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "logout") {
     state.session = null;
@@ -401,12 +484,30 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "close-modal") { document.getElementById("modal")?.remove(); return; }
+  if (action === "request-instrument") {
+    if (state.session !== "engineer") { toast("Only field engineers can request instruments", "error"); return; }
+    openModal(instrumentRequestForm());
+    return;
+  }
+  if (action === "accept-task") {
+    const task = state.fieldTasks.find((item) => item.id === event.target.closest("[data-task]")?.dataset.task);
+    if (state.session !== "engineer" || !task || task.engineer !== currentUser().name || task.status !== "Scheduled") {
+      toast("This ticket cannot be accepted from your account", "error");
+      return;
+    }
+    task.status = "In progress";
+    const incident = state.incidents.find((item) => item.id === task.incidentId);
+    incident?.timeline?.push({ title: "Field assignment accepted", actor: currentUser().name, at: now() });
+    log(`Accepted field assignment ${task.id}`);
+    save(); toast("Ticket accepted. You can now update your work."); render(); return;
+  }
   if (action === "new-tower") { openModal(towerForm()); return; }
   if (action === "new-router") { openModal(routerForm()); return; }
   if (action === "new-user") { openModal(userForm()); return; }
   if (action === "new-policy") { openModal(policyForm()); return; }
   if (action === "new-customer") { openModal(customerForm()); return; }
   if (action === "new-task") {
+    if (state.session === "engineer") { toast("Field engineers cannot create field requests", "error"); return; }
     const taskAction = event.target.closest("[data-action]");
     openModal(taskForm(taskAction?.dataset.incident || ""));
     return;
@@ -422,7 +523,14 @@ document.addEventListener("click", (event) => {
   const deletion = event.target.closest("[data-delete]")?.dataset.delete;
   if (deletion && window.confirm("Deactivate this record?")) { const [type, value] = deletion.split(":"); if (type === "tower") state.towers.find((tower) => tower.id === value).status = "Deactivated"; if (type === "router") state.routers.find((router) => router.id === value).status = "Deactivated"; if (type === "user") state.users.find((user) => user.id === value).status = "Inactive"; log(`Deactivated ${value}`); save(); toast("Record updated"); render(); return; }
   const taskId = event.target.closest("[data-task]")?.dataset.task;
-  if (taskId) { openModal(updateTask(state.fieldTasks.find((task) => task.id === taskId))); return; }
+  if (taskId) {
+    const task = state.fieldTasks.find((item) => item.id === taskId);
+    if (state.session === "engineer" && (!task || task.engineer !== currentUser().name || task.status !== "In progress")) {
+      toast("Accept this assigned ticket before submitting an update", "error");
+      return;
+    }
+    openModal(updateTask(task)); return;
+  }
   const notification = event.target.closest("[data-notification]")?.dataset.notification;
   if (notification) { state.notifications.find((item) => item.id === notification).read = true; save(); render(); }
 });
@@ -441,11 +549,39 @@ document.addEventListener("submit", (event) => {
     save(); document.getElementById("modal")?.remove(); toast("Customer account saved"); render();
   }
   if (event.target.id === "policy-form") savePolicy(event.target);
-  if (event.target.id === "note-form") { const incident = state.incidents.find((item) => item.id === event.target.dataset.id); const data = Object.fromEntries(new FormData(event.target)); incident.notes.push({ text: data.note, author: currentUser().name, at: now() }); incident.timeline.push({ title: "Troubleshooting note added", actor: currentUser().name, at: now() }); log(`Added note to ${incident.id}`); save(); document.getElementById("modal")?.remove(); toast("Note added"); render(); }
-  if (event.target.id === "task-form") { const data = Object.fromEntries(new FormData(event.target)); const incident = state.incidents.find((item) => item.id === data.incidentId); const existing = state.fieldTasks.find((task) => task.incidentId === data.incidentId); if (existing) { Object.assign(existing, { engineer: data.engineer, instructions: data.instructions }); incident.timeline.push({ title: "Field engineer assignment updated", actor: currentUser().name, at: now() }); log(`Updated field assignment for ${incident.id}`); } else { state.fieldTasks.push({ id: id("FS"), incidentId: data.incidentId, engineer: data.engineer, status: "Scheduled", location: state.towers.find((tower) => tower.id === incident.towerId)?.location || "Network site", diagnosis: "", report: "", instructions: data.instructions }); incident.fieldRequired = true; incident.timeline.push({ title: "Field-service request created", actor: currentUser().name, at: now() }); log(`Created field request for ${incident.id}`); } save(); document.getElementById("modal")?.remove(); toast("Field assignment saved"); render(); }
-  if (event.target.id === "report-form") { const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); const data = Object.fromEntries(new FormData(event.target)); Object.assign(task, data); const incident = state.incidents.find((item) => item.id === task.incidentId); incident.timeline.push({ title: "Field engineer report submitted", actor: currentUser().name, at: now() }); log(`Submitted report for ${task.id}`); save(); document.getElementById("modal")?.remove(); toast("Repair report submitted for verification"); render(); }
+  if (event.target.id === "instrument-request-form") {
+    if (state.session !== "engineer") { toast("Only field engineers can request instruments", "error"); return; }
+    const data = Object.fromEntries(new FormData(event.target));
+    const request = { id: id("IR"), ...data, quantity: Number(data.quantity), requester: currentUser().name, status: "Pending", requestedAt: now() };
+    state.instrumentRequests.unshift(request);
+    log(`Requested ${request.quantity} ${request.instrument} instrument(s)`);
+    save(); document.getElementById("modal")?.remove(); toast("Instrument request submitted"); render();
+  }
+  if (event.target.id === "note-form") {
+    const incident = state.incidents.find((item) => item.id === event.target.dataset.id);
+    const assignedTask = state.fieldTasks.find((item) => item.incidentId === incident?.id && item.engineer === currentUser().name);
+    if (state.session === "engineer" && (!assignedTask || assignedTask.status !== "In progress")) { toast("Accept your assigned ticket before adding an update", "error"); return; }
+    const data = Object.fromEntries(new FormData(event.target)); incident.notes.push({ text: data.note, author: currentUser().name, at: now() }); incident.timeline.push({ title: "Troubleshooting note added", actor: currentUser().name, at: now() }); log(`Added note to ${incident.id}`); save(); document.getElementById("modal")?.remove(); toast("Note added"); render();
+  }
+  if (event.target.id === "task-form") {
+    if (state.session === "engineer") { toast("Field engineers cannot create or assign field requests", "error"); return; }
+    const data = Object.fromEntries(new FormData(event.target)); const incident = state.incidents.find((item) => item.id === data.incidentId); const existing = state.fieldTasks.find((task) => task.incidentId === data.incidentId); if (existing) { Object.assign(existing, { engineer: data.engineer, instructions: data.instructions }); incident.timeline.push({ title: "Field engineer assignment updated", actor: currentUser().name, at: now() }); log(`Updated field assignment for ${incident.id}`); } else { state.fieldTasks.push({ id: id("FS"), incidentId: data.incidentId, engineer: data.engineer, status: "Scheduled", location: state.towers.find((tower) => tower.id === incident.towerId)?.location || "Network site", diagnosis: "", report: "", instructions: data.instructions }); incident.fieldRequired = true; incident.timeline.push({ title: "Field-service request created", actor: currentUser().name, at: now() }); log(`Created field request for ${incident.id}`); } save(); document.getElementById("modal")?.remove(); toast("Field assignment saved"); render();
+  }
+  if (event.target.id === "report-form") {
+    const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id);
+    if (state.session !== "engineer" || !task || task.engineer !== currentUser().name || task.status !== "In progress") { toast("Accept an assigned ticket before submitting a work update", "error"); return; }
+    const data = Object.fromEntries(new FormData(event.target));
+    Object.assign(task, data, { status: "Report submitted" });
+    const incident = state.incidents.find((item) => item.id === task.incidentId);
+    incident?.timeline?.push({ title: "Field engineer work update submitted for verification", actor: currentUser().name, at: now() });
+    log(`Submitted report for ${task.id}`);
+    save(); document.getElementById("modal")?.remove(); toast("Ticket update submitted for verification"); render();
+  }
   if (event.target.id === "verify-form") { const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); task.status = "Completed"; const incident = state.incidents.find((item) => item.id === task.incidentId); incident.timeline.push({ title: "Field report verified", actor: currentUser().name, at: now() }); log(`Verified report ${task.id}`); save(); document.getElementById("modal")?.remove(); toast("Field work verified"); render(); }
-  if (event.target.id === "task-update-form") { const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); Object.assign(task, Object.fromEntries(new FormData(event.target))); const incident = state.incidents.find((item) => item.id === task.incidentId); incident?.timeline?.push({ title: "Field request updated", actor: currentUser().name, at: now() }); log(`Updated field request ${task.id}`); save(); document.getElementById("modal")?.remove(); toast("Field request updated"); render(); }
+  if (event.target.id === "task-update-form") {
+    if (state.session === "engineer") { toast("Field engineers cannot manage field requests", "error"); return; }
+    const task = state.fieldTasks.find((item) => item.id === event.target.dataset.id); Object.assign(task, Object.fromEntries(new FormData(event.target))); const incident = state.incidents.find((item) => item.id === task.incidentId); incident?.timeline?.push({ title: "Field request updated", actor: currentUser().name, at: now() }); log(`Updated field request ${task.id}`); save(); document.getElementById("modal")?.remove(); toast("Field request updated"); render();
+  }
 });
 
 document.addEventListener("input", (event) => {
@@ -455,7 +591,10 @@ document.addEventListener("input", (event) => {
     const status = document.getElementById("status-filter")?.value || "";
     const priority = document.getElementById("priority-filter")?.value || "";
     const category = document.getElementById("category-filter")?.value || "";
-    document.getElementById("incident-results").innerHTML = incidentTable(state.incidents.filter((incident) => `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query) && (!status || incident.status === status) && (!priority || incident.priority === priority) && (!category || incident.category === category)));
+    const results = document.getElementById("incident-results");
+    if (results) results.innerHTML = state.session === "engineer"
+      ? fieldTaskTable(filteredEngineerTasks())
+      : incidentTable(visibleIncidents().filter((incident) => `${incident.id} ${incident.title} ${incident.assignee}`.toLowerCase().includes(query) && (!status || incident.status === status) && (!priority || incident.priority === priority) && (!category || incident.category === category)));
   }
   if (["tower-search", "tower-status"].includes(event.target.id)) {
     const query = document.getElementById("tower-search")?.value.toLowerCase() || "", status = document.getElementById("tower-status")?.value || "";
@@ -469,6 +608,26 @@ document.addEventListener("input", (event) => {
     const query = document.getElementById("customer-search")?.value.toLowerCase() || "", status = document.getElementById("customer-status")?.value || "";
     const customers = state.session === "customer" ? state.customers.filter((customer) => customer.name === currentUser().name) : state.customers;
     document.getElementById("customer-results").innerHTML = customerTable(customers.filter((customer) => `${customer.id} ${customer.name} ${customer.email}`.toLowerCase().includes(query) && (!status || customer.status === status)));
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target.id !== "engineer-date-filter") return;
+  const tasks = filteredEngineerTasks();
+  const dashboardResults = document.getElementById("engineer-ticket-results");
+  if (dashboardResults) dashboardResults.innerHTML = fieldTaskTable(tasks);
+  const incidentResults = document.getElementById("incident-results");
+  if (incidentResults) incidentResults.innerHTML = fieldTaskTable(tasks);
+  const rows = document.getElementById("engineer-field-task-rows");
+  if (rows) {
+    rows.innerHTML = tasks.map((task) => {
+      const actionButton = task.status === "Scheduled"
+        ? `<button class="btn btn-primary" data-action="accept-task" data-task="${task.id}">Accept ticket</button>`
+        : task.status === "In progress"
+          ? `<button class="btn btn-secondary" data-task="${task.id}">Update ticket</button>`
+          : task.status === "Report submitted" ? `<span class="muted">Awaiting verification</span>` : `<span class="muted">Completed</span>`;
+      return `<tr><td class="primary-text">${task.id}</td><td><button class="table-action" data-open-incident="${task.incidentId}">${task.incidentId}</button></td><td>${esc(task.engineer)}</td><td>${esc(task.location)}</td><td>${badge(task.status)}</td><td>${actionButton}</td></tr>`;
+    }).join("");
   }
 });
 

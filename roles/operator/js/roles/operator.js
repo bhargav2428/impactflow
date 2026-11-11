@@ -11,4 +11,4 @@ export const operatorDashboard = {
   panels: ["operator-queue", "operator-sla", "operator-activity"]
 };
 
-export const operatorNavigation = ["dashboard", "incidents", "notifications", "settings"];
+export const operatorNavigation = ["dashboard", "incidents", "sla-monitoring", "notifications", "reports", "settings"];

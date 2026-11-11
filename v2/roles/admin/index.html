@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIMS | Network Admin</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/role.css">
+</head>
+<body data-role="admin">
+  <div id="app"></div>
+  <template id="app-shell-template">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><div class="brand-mark">N</div><div><strong>NIMS</strong><small>Network operations</small></div></div>
+        <nav aria-label="Workspace navigation">
+          <div class="nav-label">Workspace</div>
+          <div>
+            <button class="nav-item" data-navigation-item data-page="dashboard"><span class="nav-icon">&#8962;</span><span>Overview</span></button>
+            <button class="nav-item" data-navigation-item data-page="incidents"><span class="nav-icon">&#9672;</span><span>Incidents</span></button>
+            <button class="nav-item" data-navigation-item data-page="create"><span class="nav-icon">&#43;</span><span>Raise incident</span></button>
+            <button class="nav-item" data-navigation-item data-page="infrastructure"><span class="nav-icon">&#8761;</span><span>Infrastructure</span></button>
+            <button class="nav-item" data-navigation-item data-page="escalations"><span class="nav-icon">&#8599;</span><span>Escalations</span></button>
+            <button class="nav-item" data-navigation-item data-page="field"><span class="nav-icon">&#9874;</span><span>Field service</span></button>
+          </div>
+          <div class="nav-label">Management</div>
+          <div>
+            <button class="nav-item" data-navigation-item data-page="towers"><span class="nav-icon">&#9638;</span><span>Towers</span></button>
+            <button class="nav-item" data-navigation-item data-page="routers"><span class="nav-icon">&#8761;</span><span>Routers</span></button>
+            <button class="nav-item" data-navigation-item data-page="customers"><span class="nav-icon">&#9819;</span><span>Customers</span></button>
+            <button class="nav-item" data-navigation-item data-page="users"><span class="nav-icon">&#9822;</span><span>Users</span></button>
+            <button class="nav-item" data-navigation-item data-page="sla"><span class="nav-icon">&#9687;</span><span>SLA policies</span></button>
+            <button class="nav-item" data-navigation-item data-page="reports"><span class="nav-icon">&#9637;</span><span>Reports</span></button>
+            <button class="nav-item" data-navigation-item data-page="notifications"><span class="nav-icon">&#9676;</span><span>Notifications</span></button>
+            <button class="nav-item" data-navigation-item data-page="audit"><span class="nav-icon">&#9678;</span><span>Audit log</span></button>
+            <button class="nav-item" data-navigation-item data-page="settings"><span class="nav-icon">&#9881;</span><span>Profile &amp; settings</span></button>
+          </div>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="role-chip" data-role-label></div>
+          <button class="nav-item" data-action="logout"><span class="nav-icon">&#8618;</span><span>Sign out</span></button>
+        </div>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <span class="crumb">Workspace / <strong data-current-page></strong></span>
+          <div class="top-actions">
+            <button class="icon-btn" data-page="notifications" aria-label="Notifications">&#9676;</button>
+            <div class="avatar" data-user-initials></div>
+          </div>
+        </header>
+        <section class="content" data-page-content></section>
+      </main>
+    </div>
+  </template>
+  <template id="page-head-template">
+    <div class="page-head">
+      <div><h1 data-page-title></h1><p class="subhead" data-page-subtitle></p></div>
+      <div data-page-actions></div>
+    </div>
+  </template>
+  <template id="dashboard-template">
+    <div>
+      <div data-dashboard-heading></div>
+      <div class="stats" data-dashboard-stats></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h2 data-activity-title></h2><div data-activity-action></div></div>
+          <div data-activity-content></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Priority distribution</h2></div>
+          <div class="metric-list">
+            <div class="metric-row"><div class="metric-title"><span>P1 · Critical</span><strong data-priority-value="P1">0</strong></div><div class="bar red"><span data-priority-bar="P1"></span></div></div>
+            <div class="metric-row"><div class="metric-title"><span>P2 · High</span><strong data-priority-value="P2">0</strong></div><div class="bar"><span data-priority-bar="P2"></span></div></div>
+            <div class="metric-row"><div class="metric-title"><span>P3 · Medium</span><strong data-priority-value="P3">0</strong></div><div class="bar amber"><span data-priority-bar="P3"></span></div></div>
+            <div class="metric-row"><div class="metric-title"><span>P4 · Low</span><strong data-priority-value="P4">0</strong></div><div class="bar green"><span data-priority-bar="P4"></span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Incident activity</h2><button class="panel-link" data-incident-queue-link>Open queue →</button></div>
+        <div class="chart">
+          <div class="bar-col"><i data-chart-height="42"></i>Mon</div>
+          <div class="bar-col"><i data-chart-height="67"></i>Tue</div>
+          <div class="bar-col"><i data-chart-height="55"></i>Wed</div>
+          <div class="bar-col"><i data-chart-height="88"></i>Thu</div>
+          <div class="bar-col"><i data-chart-height="63"></i>Fri</div>
+          <div class="bar-col"><i data-chart-height="76"></i>Sat</div>
+          <div class="bar-col"><i data-chart-height="96"></i>Sun</div>
+        </div>
+      </div>
+    </div>
+  </template>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

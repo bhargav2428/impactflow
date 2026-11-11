@@ -1,0 +1,5 @@
+.role-customer { --role-accent: #0891b2; }
+.role-customer .brand-mark { background: #0891b2; }
+.role-customer .btn-primary { background: #0891b2; }
+.role-customer .role-chip { color: #8de3f4; }
+.role-customer .panel { box-shadow: 0 10px 24px rgba(8, 145, 178, .06); }

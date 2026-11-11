@@ -1,0 +1,6 @@
+@Nims.Api_HostAddress = http://localhost:5114
+
+GET {{Nims.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

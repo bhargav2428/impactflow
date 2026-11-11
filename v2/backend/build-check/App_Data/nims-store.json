@@ -1,0 +1,1466 @@
+{
+  "users": [
+    {
+      "id": "USR-001",
+      "name": "Arjun Mehta",
+      "email": "admin@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$vUCDmfhEx8PUo2BUeJwrFA==$E774QexoFP5O1D4GQUpxfr7pXBSj\u002B\u002B5hUs\u002B90AHii34=",
+      "role": "admin",
+      "status": "Active"
+    },
+    {
+      "id": "USR-002",
+      "name": "Priya Nair",
+      "email": "operator@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$O/UVrA/lbORQgPiydd2pdw==$QI/unwcle7c3w/bnbGwAyJIjuuZKcHS4\u002B59ByELIkr4=",
+      "role": "operator",
+      "status": "Active"
+    },
+    {
+      "id": "USR-003",
+      "name": "Rahul Iyer",
+      "email": "lead@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$jc5FmvCPR8FqXvejZubR9g==$iV82y7YdMRbkJ5hQdng8VbnapxO5nMTFanreEzFCe3c=",
+      "role": "lead",
+      "status": "Active"
+    },
+    {
+      "id": "USR-004",
+      "name": "Vikram Singh",
+      "email": "engineer@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$5Ow5kMmSOKiOLir5KKyF1g==$Q\u002BCErkENs9Te8mkER21BsDx3KdS760B77QjEP7CsxbM=",
+      "role": "engineer",
+      "status": "Active"
+    },
+    {
+      "id": "USR-005",
+      "name": "Neeraj Rao",
+      "email": "neeraj@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$fvqJGnWwgclbM4XV5ojp3A==$tewspzqHyp75JslY87TQcYum9evHGXNiZ8lrSDv8fsg=",
+      "role": "engineer",
+      "status": "Active"
+    },
+    {
+      "id": "USR-006",
+      "name": "Dev Patel",
+      "email": "dev@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$hd7RJmcI4Zt6XDc6xLyStg==$xatwYO2JD8y7x4fAyEJxVrVcjhKm4hJazvQtKHjiatM=",
+      "role": "operator",
+      "status": "Active"
+    },
+    {
+      "id": "USR-007",
+      "name": "Sana Khan",
+      "email": "sana@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$WiWYeFSTij0anI3UVzjDeQ==$VywC0AhtgmgQnSPSlU9wpNfouPbdZpWqkQ1NditdaJQ=",
+      "role": "operator",
+      "status": "Active"
+    }
+  ],
+  "customers": [
+    {
+      "id": "CUS-001",
+      "name": "Aditi Sharma",
+      "email": "customer@nims.test",
+      "passwordHash": "pbkdf2-sha256$210000$TRNkmHzO3WVkRDMvlJCr7g==$4w8vBgAvl5koLK0t2ogdenVjian7GfV7XODtr641BsM=",
+      "phone": "\u002B91 90000 10000",
+      "address": "10, Business Park, India",
+      "routerId": "RTR-1101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-002",
+      "name": "Nexus Retail",
+      "email": "account2@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$daBoycHxA5AY6j1UOyS4Dg==$BtXZcEzTmYVrsFKJWT6PVrIiv5TIeLPbr7qeoD7qj\u002BI=",
+      "phone": "\u002B91 90000 10001",
+      "address": "11, Business Park, India",
+      "routerId": "RTR-1202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-003",
+      "name": "BlueDart Logistics",
+      "email": "account3@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$dH41CqcJRZ8wj6YpNi1qpA==$AyM\u002BSwBk169SbSpw5Z/ATOBLo2UYXbXqUFm9Fpk82YY=",
+      "phone": "\u002B91 90000 10002",
+      "address": "12, Business Park, India",
+      "routerId": "RTR-1303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-004",
+      "name": "Metro Hospitals",
+      "email": "account4@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$VO9N9Zmyme9tGvTY4I0VHw==$d\u002BIldVfoXzc5jftWswV\u002BjwlYgx5MoMKzsSZXHCqOtWA=",
+      "phone": "\u002B91 90000 10003",
+      "address": "13, Business Park, India",
+      "routerId": "RTR-2101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-005",
+      "name": "Orbit Finserv",
+      "email": "account5@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$TL68tQSGwC5h8dzCwBa6Rw==$tm3Fc0ScbczYaJHM2Hm2TR6iRbo82FiSUGQ7y4jw9TQ=",
+      "phone": "\u002B91 90000 10004",
+      "address": "14, Business Park, India",
+      "routerId": "RTR-2202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-006",
+      "name": "Kaveri Textiles",
+      "email": "account6@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$GPUDychi4tfXAxgSRam5pQ==$7K4neTZCAfuqCuBVy/zs5qfD90qxyvXz0AbYrFvIjU4=",
+      "phone": "\u002B91 90000 10005",
+      "address": "15, Business Park, India",
+      "routerId": "RTR-2303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-007",
+      "name": "Tata Renewables",
+      "email": "account7@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$vAanssF99L\u002Bl8VjA4Z4dkg==$LzemDViZLJ\u002BN1Dz3iJv7V0LS\u002BGMDioMqfEVmu6DvWHk=",
+      "phone": "\u002B91 90000 10006",
+      "address": "16, Business Park, India",
+      "routerId": "RTR-3101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-008",
+      "name": "Vistara Foods",
+      "email": "account8@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$NxdqQyVqqFHJM\u002Bqi9zR/pw==$J4jBJSrORpA6iFLgYeyG/ALgJ5W\u002B5qLf5lmg5LL9BMM=",
+      "phone": "\u002B91 90000 10007",
+      "address": "17, Business Park, India",
+      "routerId": "RTR-3202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-009",
+      "name": "Aditi Sharma 2",
+      "email": "account9@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$8GwN/MabAyebLANiGqzubw==$T\u002BS2UttQ7yoegCF6XcP3N2ScsGZHqwNeiKFzgcrra6w=",
+      "phone": "\u002B91 90000 10008",
+      "address": "18, Business Park, India",
+      "routerId": "RTR-3303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-010",
+      "name": "Nexus Retail 2",
+      "email": "account10@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$4fzRSLr/g6Rc9wC34Ery4Q==$moR9mMiJLgq5DRtlpKYMEzaH9V6LvddrUDXrCg6ifGo=",
+      "phone": "\u002B91 90000 10009",
+      "address": "19, Business Park, India",
+      "routerId": "RTR-4101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-011",
+      "name": "BlueDart Logistics 2",
+      "email": "account11@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$WEMG8VEuR44iJGrRrrucaw==$41aNzn4bTv8AA/OY67KUg83tK0XjjAuef1Xe1s\u002BpkQA=",
+      "phone": "\u002B91 90000 10010",
+      "address": "20, Business Park, India",
+      "routerId": "RTR-4202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-012",
+      "name": "Metro Hospitals 2",
+      "email": "account12@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$1BBHFYzqgH1fqqvpkLkwzw==$6Fy/hxlMsVCiV15yxXMcwMjfNpKa9Mj1wNpRmgl/YNI=",
+      "phone": "\u002B91 90000 10011",
+      "address": "21, Business Park, India",
+      "routerId": "RTR-4303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-013",
+      "name": "Orbit Finserv 2",
+      "email": "account13@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$q5t\u002Bm\u002BE1fP/Fho6ierTODA==$yX2ljhRTwFQupHQi2TwW7ykEn2HCxeoFjM4m7x2AdYk=",
+      "phone": "\u002B91 90000 10012",
+      "address": "22, Business Park, India",
+      "routerId": "RTR-5101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-014",
+      "name": "Kaveri Textiles 2",
+      "email": "account14@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$/ly6NKJGRwRjiGqqL2xJ6g==$2PHAhwPIaeqzv66\u002BVGjkDHT3HXUSSjhuXDPyZF7csKA=",
+      "phone": "\u002B91 90000 10013",
+      "address": "23, Business Park, India",
+      "routerId": "RTR-5202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-015",
+      "name": "Tata Renewables 2",
+      "email": "account15@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$lMLNonGlpOIHoAmMCxgg0Q==$ydODJZmXrM\u002B1PAKE840sm6UVneTl4rTwiWd5El4XqPc=",
+      "phone": "\u002B91 90000 10014",
+      "address": "24, Business Park, India",
+      "routerId": "RTR-5303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-016",
+      "name": "Vistara Foods 2",
+      "email": "account16@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$xX7HYGtaZHIOTdZ67CRgsQ==$3kk0/paZl442xXlkX8M2TrFNEjDNTL7IVRorWVtTkOQ=",
+      "phone": "\u002B91 90000 10015",
+      "address": "25, Business Park, India",
+      "routerId": "RTR-1101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-017",
+      "name": "Aditi Sharma 3",
+      "email": "account17@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$NjWhzWOCMSk\u002BMBijkk/dng==$LR1C05wDMNl0q/RyBcQZFZrAcDDrHezDVc37cQsD7/4=",
+      "phone": "\u002B91 90000 10016",
+      "address": "26, Business Park, India",
+      "routerId": "RTR-1202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-018",
+      "name": "Nexus Retail 3",
+      "email": "account18@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$MqJbPf5tYXzOVp4l4fHEiQ==$BWxFUcvyDpmKGSvEuDNW8GTVrJjnqY2jSEpYg0MgvMw=",
+      "phone": "\u002B91 90000 10017",
+      "address": "27, Business Park, India",
+      "routerId": "RTR-1303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-019",
+      "name": "BlueDart Logistics 3",
+      "email": "account19@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$l547PYNkstQX5qQvpDupqg==$r2VWD0pb7HgZL1owExrqqwNn7Orjrz1n8684yx51SD0=",
+      "phone": "\u002B91 90000 10018",
+      "address": "28, Business Park, India",
+      "routerId": "RTR-2101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-020",
+      "name": "Metro Hospitals 3",
+      "email": "account20@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$3dOCT660H53dwKp29Ux3Rw==$7BmlPe6q6mMkPW/PywE85gfylpWYdE7y5MN39be7GdU=",
+      "phone": "\u002B91 90000 10019",
+      "address": "29, Business Park, India",
+      "routerId": "RTR-2202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-021",
+      "name": "Orbit Finserv 3",
+      "email": "account21@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$7LvI\u002BsEUbj2sYkq/TCz7Iw==$cFmc\u002BF2\u002BGSBLkN4hw4UKkW3ZuXrfxqdRwNf4QyJWl/M=",
+      "phone": "\u002B91 90000 10020",
+      "address": "30, Business Park, India",
+      "routerId": "RTR-2303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-022",
+      "name": "Kaveri Textiles 3",
+      "email": "account22@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$Xd3vXp386r\u002BztmN15HvyIA==$V\u002BHweSlZW/vaqtHhSb3Rw\u002BrKDuB/Ys7ImNMS3zqvDG0=",
+      "phone": "\u002B91 90000 10021",
+      "address": "31, Business Park, India",
+      "routerId": "RTR-3101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-023",
+      "name": "Tata Renewables 3",
+      "email": "account23@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$qah98YHWEEz141WG3xX5Sg==$Bix6dzJC7O9\u002Bg1l70tkA7zwPae9Zmk4PM3Eom/K4zSQ=",
+      "phone": "\u002B91 90000 10022",
+      "address": "32, Business Park, India",
+      "routerId": "RTR-3202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-024",
+      "name": "Vistara Foods 3",
+      "email": "account24@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$w7\u002B6Et9ej9GfgngeFFRAIA==$zF7PPStTN0M0sjDrdTWyLFyBXQN500dKx1pv1RsNm8U=",
+      "phone": "\u002B91 90000 10023",
+      "address": "33, Business Park, India",
+      "routerId": "RTR-3303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-025",
+      "name": "Aditi Sharma 4",
+      "email": "account25@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$mCKdOcsKXFYmpmmz\u002B\u002B1fLg==$G/iqcXC63QljJp7XZy5LJekCh/LIUd5FbM\u002BBnT36yao=",
+      "phone": "\u002B91 90000 10024",
+      "address": "34, Business Park, India",
+      "routerId": "RTR-4101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-026",
+      "name": "Nexus Retail 4",
+      "email": "account26@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$XahuHfSDm9WLgWPURHir6w==$lS//XzXVunQQpNpoy/18OYpfM\u002BLJi\u002BRyEzjUE/5d8ss=",
+      "phone": "\u002B91 90000 10025",
+      "address": "35, Business Park, India",
+      "routerId": "RTR-4202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-027",
+      "name": "BlueDart Logistics 4",
+      "email": "account27@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$mc1Pub4PM9PB5lkoPTTUsQ==$TUmv1cz7VVW\u002BR128H8vulgM/IYQaPalpo3V1lQXXgPk=",
+      "phone": "\u002B91 90000 10026",
+      "address": "36, Business Park, India",
+      "routerId": "RTR-4303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-028",
+      "name": "Metro Hospitals 4",
+      "email": "account28@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$eOlxeZgwhM03SqPvjKqkJw==$5Ptvh\u002BE4qJ7OcpEepEBTd8SgqXXs2STHtDz2y4vSdxU=",
+      "phone": "\u002B91 90000 10027",
+      "address": "37, Business Park, India",
+      "routerId": "RTR-5101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-029",
+      "name": "Orbit Finserv 4",
+      "email": "account29@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$bQLTHyKRcGKsjroaS/TZdA==$bNS\u002BSQx/B3boe\u002BX6dqU3W\u002BekRkAjQHk/W6g0\u002B\u002BgJUp8=",
+      "phone": "\u002B91 90000 10028",
+      "address": "38, Business Park, India",
+      "routerId": "RTR-5202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-030",
+      "name": "Kaveri Textiles 4",
+      "email": "account30@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$0bXAYaE8Cixh8xjTP1nx\u002BQ==$66fJWc1zchup5X3G/1Awu3jno5LZJa3PrFtoiKKAi\u002B8=",
+      "phone": "\u002B91 90000 10029",
+      "address": "39, Business Park, India",
+      "routerId": "RTR-5303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-031",
+      "name": "Tata Renewables 4",
+      "email": "account31@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$IVY2n1gjD7S69ATU9g53ig==$2gJZ8SkKCilBRh0ZqF1jky4AQopeIrvGEFHDoYALzxk=",
+      "phone": "\u002B91 90000 10030",
+      "address": "40, Business Park, India",
+      "routerId": "RTR-1101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-032",
+      "name": "Vistara Foods 4",
+      "email": "account32@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$J0E6HmvKMjk9SMGb55RdvQ==$YDKsJu1LNAg61leM\u002BOMi175/08UtnvVhWgzhEmqmibo=",
+      "phone": "\u002B91 90000 10031",
+      "address": "41, Business Park, India",
+      "routerId": "RTR-1202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-033",
+      "name": "Aditi Sharma 5",
+      "email": "account33@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$BCg\u002ByDkrMFcCkKerMH3bLg==$e8C\u002BZBBIIpqWEHF94FDa7xKqjCSPef8izgXJfRuInrc=",
+      "phone": "\u002B91 90000 10032",
+      "address": "42, Business Park, India",
+      "routerId": "RTR-1303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-034",
+      "name": "Nexus Retail 5",
+      "email": "account34@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$dxa4eT1THBgG0UTcW\u002BIBgA==$8fc1gqtsPBWwC7uJaSjRpXiVRjjoGJdwIPkvI7f6T40=",
+      "phone": "\u002B91 90000 10033",
+      "address": "43, Business Park, India",
+      "routerId": "RTR-2101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-035",
+      "name": "BlueDart Logistics 5",
+      "email": "account35@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$0dXx01eemhaRWaZowVigyg==$aJtjp6L6l3DMxt4dGWJuyfVpDEuZdLWOZgx\u002BoN/exz0=",
+      "phone": "\u002B91 90000 10034",
+      "address": "44, Business Park, India",
+      "routerId": "RTR-2202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-036",
+      "name": "Metro Hospitals 5",
+      "email": "account36@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$QBhhbc9bPOR7/gBCUbeaOQ==$BLtIvxCe6JVvP/KvYhSSx/0\u002BilZyWXgPiVuLeuHvo1w=",
+      "phone": "\u002B91 90000 10035",
+      "address": "45, Business Park, India",
+      "routerId": "RTR-2303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-037",
+      "name": "Orbit Finserv 5",
+      "email": "account37@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$Mf9ExSBhhXMf/FOYBT7u1A==$jEsNFG0YLk1axOOrlwAYLHOtMtLTdkfyhZ/VuWqmiVg=",
+      "phone": "\u002B91 90000 10036",
+      "address": "46, Business Park, India",
+      "routerId": "RTR-3101",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-038",
+      "name": "Kaveri Textiles 5",
+      "email": "account38@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$Np9KrcNklcmsq1SdX7nzAQ==$wIkZ5/nxmXSSUdawDBVwrWP7Qmcl4ecgyINmUiKwSCA=",
+      "phone": "\u002B91 90000 10037",
+      "address": "47, Business Park, India",
+      "routerId": "RTR-3202",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-039",
+      "name": "Tata Renewables 5",
+      "email": "account39@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$s48cF5gWBCX2H\u002BfSJq\u002Bmcw==$0CCyk22l7u3o/RwzEUGRaCxgHpqc2wzP41MbBYh0I5w=",
+      "phone": "\u002B91 90000 10038",
+      "address": "48, Business Park, India",
+      "routerId": "RTR-3303",
+      "status": "Active"
+    },
+    {
+      "id": "CUS-040",
+      "name": "Vistara Foods 5",
+      "email": "account40@example.test",
+      "passwordHash": "pbkdf2-sha256$210000$sz756lWERs4l2B\u002Bj5Jon7w==$GxYzMddbOKW8gJR80JV7IJL5l\u002BwgByNYk5kJOf1DSdc=",
+      "phone": "\u002B91 90000 10039",
+      "address": "49, Business Park, India",
+      "routerId": "RTR-4101",
+      "status": "Active"
+    }
+  ],
+  "towers": [
+    {
+      "id": "TWR-001",
+      "name": "Koramangala Hub",
+      "location": "Bengaluru",
+      "status": "Active"
+    },
+    {
+      "id": "TWR-002",
+      "name": "Whitefield East",
+      "location": "Bengaluru",
+      "status": "Active"
+    },
+    {
+      "id": "TWR-003",
+      "name": "Andheri Central",
+      "location": "Mumbai",
+      "status": "Active"
+    },
+    {
+      "id": "TWR-004",
+      "name": "Salt Lake Sector V",
+      "location": "Kolkata",
+      "status": "Active"
+    },
+    {
+      "id": "TWR-005",
+      "name": "Hitech City Core",
+      "location": "Hyderabad",
+      "status": "Active"
+    }
+  ],
+  "routers": [
+    {
+      "id": "RTR-1101",
+      "towerId": "TWR-001",
+      "model": "Cisco ASR 920",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-1202",
+      "towerId": "TWR-001",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-1303",
+      "towerId": "TWR-001",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-2101",
+      "towerId": "TWR-002",
+      "model": "Cisco ASR 920",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-2202",
+      "towerId": "TWR-002",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-2303",
+      "towerId": "TWR-002",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-3101",
+      "towerId": "TWR-003",
+      "model": "Cisco ASR 920",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-3202",
+      "towerId": "TWR-003",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-3303",
+      "towerId": "TWR-003",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-4101",
+      "towerId": "TWR-004",
+      "model": "Cisco ASR 920",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-4202",
+      "towerId": "TWR-004",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-4303",
+      "towerId": "TWR-004",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-5101",
+      "towerId": "TWR-005",
+      "model": "Cisco ASR 920",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-5202",
+      "towerId": "TWR-005",
+      "model": "Juniper MX204",
+      "status": "Active"
+    },
+    {
+      "id": "RTR-5303",
+      "towerId": "TWR-005",
+      "model": "Juniper MX204",
+      "status": "Active"
+    }
+  ],
+  "policies": [
+    {
+      "id": "P4",
+      "range": "1\u201310",
+      "min": 1,
+      "max": 10,
+      "response": 4,
+      "resolution": 24
+    },
+    {
+      "id": "P3",
+      "range": "11\u201350",
+      "min": 11,
+      "max": 50,
+      "response": 2,
+      "resolution": 12
+    },
+    {
+      "id": "P2",
+      "range": "51\u2013200",
+      "min": 51,
+      "max": 200,
+      "response": 0.5,
+      "resolution": 4
+    },
+    {
+      "id": "P1",
+      "range": "201\u002B",
+      "min": 201,
+      "max": 1000000,
+      "response": 0.16666666666666666,
+      "resolution": 1
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-02400",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-1101",
+      "towerId": "TWR-001",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Investigating",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-11T17:42:11.8469564+00:00",
+      "responseDeadline": "2026-11-11T21:42:11.8469564+00:00",
+      "resolutionDeadline": "2026-11-12T17:42:11.8469564+00:00",
+      "escalated": false,
+      "fieldRequired": true,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-11T17:42:11.8469564+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-11T17:42:11.8469564+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02401",
+      "title": "Intermittent connectivity",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-1202",
+      "towerId": "TWR-001",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Open",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-11T13:57:11.8484002+00:00",
+      "responseDeadline": "2026-11-11T17:57:11.8484002+00:00",
+      "resolutionDeadline": "2026-11-12T13:57:11.8484002+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-11T13:57:11.8484002+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-11T13:57:11.8484002+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02402",
+      "title": "Link unavailable",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-1303",
+      "towerId": "TWR-001",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Escalated",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-11T10:12:11.8484068+00:00",
+      "responseDeadline": "2026-11-11T14:12:11.8484068+00:00",
+      "resolutionDeadline": "2026-11-12T10:12:11.8484068+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-11T10:12:11.8484068+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-11T10:12:11.8484068+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02403",
+      "title": "High latency alert",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-2101",
+      "towerId": "TWR-002",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Resolved",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-11T06:27:11.8484115+00:00",
+      "responseDeadline": "2026-11-11T10:27:11.8484115+00:00",
+      "resolutionDeadline": "2026-11-12T06:27:11.8484115+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-11T06:27:11.8484115+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-11T06:27:11.8484115+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02404",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-2202",
+      "towerId": "TWR-002",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Pending validation",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-11T02:42:11.8484202+00:00",
+      "responseDeadline": "2026-11-11T06:42:11.8484202+00:00",
+      "resolutionDeadline": "2026-11-12T02:42:11.8484202+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-11T02:42:11.8484202+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-11T02:42:11.8484202+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02405",
+      "title": "Intermittent connectivity",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-2303",
+      "towerId": "TWR-002",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Investigating",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-10T22:57:11.8484525+00:00",
+      "responseDeadline": "2026-11-11T02:57:11.8484525+00:00",
+      "resolutionDeadline": "2026-11-11T22:57:11.8484525+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T22:57:11.8484525+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T22:57:11.8484525+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02406",
+      "title": "Link unavailable",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-3101",
+      "towerId": "TWR-003",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Open",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-10T19:12:11.848454+00:00",
+      "responseDeadline": "2026-11-10T23:12:11.848454+00:00",
+      "resolutionDeadline": "2026-11-11T19:12:11.848454+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T19:12:11.848454+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T19:12:11.848454+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02407",
+      "title": "High latency alert",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-3202",
+      "towerId": "TWR-003",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Escalated",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-10T15:27:11.8484554+00:00",
+      "responseDeadline": "2026-11-10T19:27:11.8484554+00:00",
+      "resolutionDeadline": "2026-11-11T15:27:11.8484554+00:00",
+      "escalated": true,
+      "fieldRequired": true,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T15:27:11.8484554+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T15:27:11.8484554+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02408",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-3303",
+      "towerId": "TWR-003",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Resolved",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-10T11:42:11.8484568+00:00",
+      "responseDeadline": "2026-11-10T15:42:11.8484568+00:00",
+      "resolutionDeadline": "2026-11-11T11:42:11.8484568+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T11:42:11.8484568+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T11:42:11.8484568+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02409",
+      "title": "Intermittent connectivity",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-4101",
+      "towerId": "TWR-004",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Pending validation",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-10T07:57:11.8484582+00:00",
+      "responseDeadline": "2026-11-10T11:57:11.8484582+00:00",
+      "resolutionDeadline": "2026-11-11T07:57:11.8484582+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T07:57:11.8484582+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T07:57:11.8484582+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02410",
+      "title": "Link unavailable",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-4202",
+      "towerId": "TWR-004",
+      "affected": 2,
+      "priority": "P4",
+      "status": "Investigating",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-10T04:12:11.8484596+00:00",
+      "responseDeadline": "2026-11-10T08:12:11.8484596+00:00",
+      "resolutionDeadline": "2026-11-11T04:12:11.8484596+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T04:12:11.8484596+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T04:12:11.8484596+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02411",
+      "title": "High latency alert",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-4303",
+      "towerId": "TWR-004",
+      "affected": 2,
+      "priority": "P4",
+      "status": "Open",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-10T00:27:11.848461+00:00",
+      "responseDeadline": "2026-11-10T04:27:11.848461+00:00",
+      "resolutionDeadline": "2026-11-11T00:27:11.848461+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-10T00:27:11.848461+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-10T00:27:11.848461+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02412",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-5101",
+      "towerId": "TWR-005",
+      "affected": 2,
+      "priority": "P4",
+      "status": "Escalated",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-09T20:42:11.8484631+00:00",
+      "responseDeadline": "2026-11-10T00:42:11.8484631+00:00",
+      "resolutionDeadline": "2026-11-10T20:42:11.8484631+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-09T20:42:11.8484631+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-09T20:42:11.8484631+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02413",
+      "title": "Intermittent connectivity",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-5202",
+      "towerId": "TWR-005",
+      "affected": 2,
+      "priority": "P4",
+      "status": "Resolved",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-09T16:57:11.848473+00:00",
+      "responseDeadline": "2026-11-09T20:57:11.848473+00:00",
+      "resolutionDeadline": "2026-11-10T16:57:11.848473+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-09T16:57:11.848473+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-09T16:57:11.848473+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02414",
+      "title": "Link unavailable",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-5303",
+      "towerId": "TWR-005",
+      "affected": 2,
+      "priority": "P4",
+      "status": "Pending validation",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-09T13:12:11.8484879+00:00",
+      "responseDeadline": "2026-11-09T17:12:11.8484879+00:00",
+      "resolutionDeadline": "2026-11-10T13:12:11.8484879+00:00",
+      "escalated": true,
+      "fieldRequired": true,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-09T13:12:11.8484879+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-09T13:12:11.8484879+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02415",
+      "title": "High latency alert",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-1101",
+      "towerId": "TWR-001",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Investigating",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-09T09:27:11.8485039+00:00",
+      "responseDeadline": "2026-11-09T13:27:11.8485039+00:00",
+      "resolutionDeadline": "2026-11-10T09:27:11.8485039+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-09T09:27:11.8485039+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-09T09:27:11.8485039+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02416",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-1202",
+      "towerId": "TWR-001",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Open",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-09T05:42:11.8485054+00:00",
+      "responseDeadline": "2026-11-09T09:42:11.8485054+00:00",
+      "resolutionDeadline": "2026-11-10T05:42:11.8485054+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-09T05:42:11.8485054+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-09T05:42:11.8485054+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02417",
+      "title": "Intermittent connectivity",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-1303",
+      "towerId": "TWR-001",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Escalated",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-09T01:57:11.8485068+00:00",
+      "responseDeadline": "2026-11-09T05:57:11.8485068+00:00",
+      "resolutionDeadline": "2026-11-10T01:57:11.8485068+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-09T01:57:11.8485068+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-09T01:57:11.8485068+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02418",
+      "title": "Link unavailable",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-2101",
+      "towerId": "TWR-002",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Resolved",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-08T22:12:11.8485082+00:00",
+      "responseDeadline": "2026-11-09T02:12:11.8485082+00:00",
+      "resolutionDeadline": "2026-11-09T22:12:11.8485082+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-08T22:12:11.8485082+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-08T22:12:11.8485082+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02419",
+      "title": "High latency alert",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-2202",
+      "towerId": "TWR-002",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Pending validation",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-08T18:27:11.8485096+00:00",
+      "responseDeadline": "2026-11-08T22:27:11.8485096+00:00",
+      "resolutionDeadline": "2026-11-09T18:27:11.8485096+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-08T18:27:11.8485096+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-08T18:27:11.8485096+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02420",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-2303",
+      "towerId": "TWR-002",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Investigating",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-08T14:42:11.848511+00:00",
+      "responseDeadline": "2026-11-08T18:42:11.848511+00:00",
+      "resolutionDeadline": "2026-11-09T14:42:11.848511+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-08T14:42:11.848511+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-08T14:42:11.848511+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02421",
+      "title": "Intermittent connectivity",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-3101",
+      "towerId": "TWR-003",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Open",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-08T10:57:11.8485124+00:00",
+      "responseDeadline": "2026-11-08T14:57:11.8485124+00:00",
+      "resolutionDeadline": "2026-11-09T10:57:11.8485124+00:00",
+      "escalated": false,
+      "fieldRequired": true,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-08T10:57:11.8485124+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-08T10:57:11.8485124+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02422",
+      "title": "Link unavailable",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Performance",
+      "scope": "router",
+      "routerId": "RTR-3202",
+      "towerId": "TWR-003",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Escalated",
+      "assignee": "Dev Patel",
+      "createdAt": "2026-11-08T07:12:11.8485138+00:00",
+      "responseDeadline": "2026-11-08T11:12:11.8485138+00:00",
+      "resolutionDeadline": "2026-11-09T07:12:11.8485138+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-08T07:12:11.8485138+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-08T07:12:11.8485138+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02423",
+      "title": "High latency alert",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Hardware",
+      "scope": "router",
+      "routerId": "RTR-3303",
+      "towerId": "TWR-003",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Resolved",
+      "assignee": "Sana Khan",
+      "createdAt": "2026-11-08T03:27:11.8485152+00:00",
+      "responseDeadline": "2026-11-08T07:27:11.8485152+00:00",
+      "resolutionDeadline": "2026-11-09T03:27:11.8485152+00:00",
+      "escalated": false,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-08T03:27:11.8485152+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-08T03:27:11.8485152+00:00"
+        }
+      ]
+    },
+    {
+      "id": "INC-02424",
+      "title": "Packet loss detected",
+      "description": "Customers are reporting service instability across the affected network segment.",
+      "category": "Connectivity",
+      "scope": "router",
+      "routerId": "RTR-4101",
+      "towerId": "TWR-004",
+      "affected": 3,
+      "priority": "P4",
+      "status": "Pending validation",
+      "assignee": "Priya Nair",
+      "createdAt": "2026-11-07T23:42:11.8485166+00:00",
+      "responseDeadline": "2026-11-08T03:42:11.8485166+00:00",
+      "resolutionDeadline": "2026-11-08T23:42:11.8485166+00:00",
+      "escalated": true,
+      "fieldRequired": false,
+      "notes": [
+        {
+          "text": "Incident created and SLA allocated automatically.",
+          "author": "System",
+          "at": "2026-11-07T23:42:11.8485166+00:00"
+        }
+      ],
+      "timeline": [
+        {
+          "title": "Incident created",
+          "actor": "System",
+          "at": "2026-11-07T23:42:11.8485166+00:00"
+        }
+      ]
+    }
+  ],
+  "fieldTasks": [
+    {
+      "id": "FS-108",
+      "incidentId": "INC-02402",
+      "engineer": "Vikram Singh",
+      "status": "In progress",
+      "location": "Salt Lake Sector V",
+      "diagnosis": "",
+      "report": "",
+      "instructions": ""
+    },
+    {
+      "id": "FS-109",
+      "incidentId": "INC-02408",
+      "engineer": "Neeraj Rao",
+      "status": "Scheduled",
+      "location": "Andheri Central",
+      "diagnosis": "",
+      "report": "",
+      "instructions": ""
+    }
+  ],
+  "notifications": [
+    {
+      "id": "NT-1",
+      "title": "P1 SLA breach risk",
+      "detail": "INC-02402 needs immediate review.",
+      "read": false,
+      "at": "2026-11-11T17:42:11.848939+00:00",
+      "userId": null,
+      "role": "lead"
+    },
+    {
+      "id": "NT-2",
+      "title": "Field report submitted",
+      "detail": "FS-109 is ready for validation.",
+      "read": false,
+      "at": "2026-11-11T17:42:11.8490213+00:00",
+      "userId": null,
+      "role": "lead"
+    }
+  ],
+  "audit": [],
+  "settings": {}
+}
